@@ -28,6 +28,9 @@ public class Model
    /** The collection of events that this model represents */
    private final List<Event> events = new LinkedList<Event>();
 
+   /** The lower bound to zoom to */
+   private double lowerBound = 1;
+
    /** The selected subject */
    private Integer selectedSubject = -1;
 
@@ -39,6 +42,9 @@ public class Model
 
    /** The list of all the trials */
    private final Set<Integer> trials = new TreeSet<Integer>();
+
+   /** The upper bound to zoom to */
+   private double upperBound = 16;
 
    /**
     * Gets all the available subjects for this file
@@ -68,7 +74,7 @@ public class Model
    public final Collection<Double> getBarTimes()
    {
       Collection<Double> barTimes = new LinkedList<Double>();
-      for (int i = 1; i < getNumberOfBars(); i++)
+      for (int i = (int) lowerBound; i <= upperBound; i++)
          barTimes.add(i * barLength);
       return barTimes;
    }
@@ -122,12 +128,17 @@ public class Model
     */
    public final double getNumberOfBars()
    {
-      double numBars = 0;
+      return upperBound - lowerBound;
+   }
 
-      for (Event ev : events)
-         numBars = Math.max(ev.getBar(), numBars);
-
-      return Math.ceil(numBars);
+   /**
+    * Gets the time offset for the given zoom level
+    * 
+    * @return The time offset for the given zoom level as a double
+    */
+   public final double getOffset()
+   {
+      return lowerBound * barLength;
    }
 
    /**
@@ -220,6 +231,20 @@ public class Model
    }
 
    /**
+    * Zooms in the model to a given range
+    * 
+    * @param lower
+    *           THe lower range to zoom to
+    * @param upper
+    *           THe upper range to zoom to
+    */
+   public final void zoom(final double lower, final double upper)
+   {
+      lowerBound = lower;
+      upperBound = upper;
+   }
+
+   /**
     * Generates a model given a file and other parameters
     * 
     * @param f
@@ -228,16 +253,22 @@ public class Model
     *           THe subject to consider
     * @param trial
     *           The trial to consider
+    * @param lower
+    *           the Lower bound of zoom
+    * @param upper
+    *           the Upper bound of zoom
     * @return A valid model for this subject and trial
     * @throws IOException
     *            if something goes wrong reading the file
     */
-   public static final Model generateModel(final File f, final int subject, final int trial)
-         throws IOException
+   public static final Model generateModel(final File f, final int subject, final int trial,
+         final double lower, final double upper) throws IOException
    {
       Model mod = new Model();
       mod.selectedSubject = subject;
       mod.selectedTrial = trial;
+      mod.lowerBound = lower - 1;
+      mod.upperBound = upper + 1;
 
       CSVReader reader = new CSVReader(new FileReader(f));
       String[] headers = reader.readNext();
@@ -248,24 +279,43 @@ public class Model
       voice = getHeader(headers, "Voice");
       subj = getHeader(headers, "Subject");
       tri = getHeader(headers, "Trial");
-      for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
-      {
-         if (Integer.parseInt(nextLine[subj]) == subject)
+
+      // Two types of data
+      if (subj == -1)
+         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
          {
-            if (Integer.parseInt(nextLine[tri]) == trial)
+            double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
+            if (tScoreTime >= lower && tScoreTime <= upper)
             {
                Event ev = new Event(Double.parseDouble(nextLine[velocity]),
                      Double.parseDouble(nextLine[onsetPos]), Double.parseDouble(nextLine[voice]),
                      Double.parseDouble(nextLine[scoreTime]));
                mod.events.add(ev);
             }
-
-            mod.trials.add(Integer.parseInt(nextLine[tri]));
          }
-         mod.subjects.add(Integer.parseInt(nextLine[subj]));
+      else
+         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
+         {
+            if (Integer.parseInt(nextLine[subj]) == subject)
+            {
+               if (Integer.parseInt(nextLine[tri]) == trial)
+               {
+                  double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
+                  if (tScoreTime >= lower && tScoreTime <= upper)
+                  {
+                     Event ev = new Event(Double.parseDouble(nextLine[velocity]),
+                           Double.parseDouble(nextLine[onsetPos]),
+                           Double.parseDouble(nextLine[voice]),
+                           Double.parseDouble(nextLine[scoreTime]));
+                     mod.events.add(ev);
+                  }
+               }
 
-      }
+               mod.trials.add(Integer.parseInt(nextLine[tri]));
+            }
+            mod.subjects.add(Integer.parseInt(nextLine[subj]));
 
+         }
       return mod;
    }
 

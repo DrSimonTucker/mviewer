@@ -12,10 +12,14 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import uk.ac.shef.dcs.oak.musicview.Controller;
 import uk.ac.shef.dcs.oak.musicview.Model;
 import uk.ac.shef.dcs.oak.musicview.ModelListener;
+
+import com.jidesoft.swing.RangeSlider;
 
 /**
  * The selection panel controls the loading and unloading of the model (and the
@@ -26,11 +30,16 @@ import uk.ac.shef.dcs.oak.musicview.ModelListener;
  */
 public class SelectionPanel extends JPanel implements ModelListener
 {
+   /** Flag to prevent overlap when loading new models */
+   private boolean loading = false;
+
    /** The controller that the selection panel links to */
    private final Controller mainController;
 
    /** The file that has been selected by the user */
    private File selectedFile;
+
+   RangeSlider slider;
 
    /** The combo box model for subjects */
    private final DefaultComboBoxModel subjectBoxModel = new DefaultComboBoxModel();
@@ -92,6 +101,24 @@ public class SelectionPanel extends JPanel implements ModelListener
             loadNewModel(false);
          }
       });
+
+      // Add in the range slider
+      JLabel zoomLabel = new JLabel("Zoom: ");
+      add(zoomLabel);
+      slider = new RangeSlider(1, 15);
+      slider.setMajorTickSpacing(1);
+      slider.setPaintTicks(true);
+      slider.setLowValue(1);
+      slider.setHighValue(15);
+      add(slider);
+      slider.addChangeListener(new ChangeListener()
+      {
+         @Override
+         public void stateChanged(final ChangeEvent arg0)
+         {
+            loadNewModel(false);
+         }
+      });
    }
 
    /**
@@ -102,43 +129,48 @@ public class SelectionPanel extends JPanel implements ModelListener
     */
    private void loadNewModel(final boolean chooseFile)
    {
-      if (chooseFile)
+      if (!loading)
       {
-         JFileChooser chooser = new JFileChooser();
-         chooser.showOpenDialog(this);
-         selectedFile = chooser.getSelectedFile();
-      }
+         if (chooseFile)
+         {
+            JFileChooser chooser = new JFileChooser();
+            chooser.showOpenDialog(this);
+            selectedFile = chooser.getSelectedFile();
+         }
 
-      try
-      {
-         Object subj = subjectBoxModel.getSelectedItem();
-         Integer subjNumber = (Integer) subj;
-         Object trial = trialBoxModel.getSelectedItem();
-         Integer trialNumber = (Integer) trial;
-         if (trialNumber == null)
-            trialNumber = 1;
-         if (subjNumber == null)
-            subjNumber = 1;
-         mainController.setModel(Model.generateModel(selectedFile, subjNumber, trialNumber));
-      }
-      catch (IOException e)
-      {
-         JOptionPane.showMessageDialog(this, e.getLocalizedMessage());
+         try
+         {
+            Object subj = subjectBoxModel.getSelectedItem();
+            Integer subjNumber = (Integer) subj;
+            Object trial = trialBoxModel.getSelectedItem();
+            Integer trialNumber = (Integer) trial;
+            if (trialNumber == null)
+               trialNumber = 1;
+            if (subjNumber == null)
+               subjNumber = 1;
+            mainController.setModel(Model.generateModel(selectedFile, subjNumber, trialNumber,
+                  slider.getLowValue(), slider.getHighValue() + 1));
+         }
+         catch (IOException e)
+         {
+            JOptionPane.showMessageDialog(this, e.getLocalizedMessage());
+         }
       }
    }
 
    @Override
    public final void newModelLoaded(final Model mod)
    {
+      loading = true;
       subjectBoxModel.removeAllElements();
       for (Integer subject : mod.getAllSubjects())
          subjectBoxModel.addElement(subject);
       subjectBoxModel.setSelectedItem(mod.getSelectedSubject());
 
       trialBoxModel.removeAllElements();
-      System.out.println(mod.getAllTrials());
       for (Integer trial : mod.getAllTrials())
          trialBoxModel.addElement(trial);
       trialBoxModel.setSelectedItem(mod.getSelectedTrial());
+      loading = false;
    }
 }

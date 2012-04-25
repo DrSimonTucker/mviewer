@@ -76,14 +76,14 @@ public class ActionLine extends JPanel implements ModelListener
 
                // Draw a circle at the relevant point and the relevant pitch
                g.setColor(Color.RED);
-               int pixCent = (int) (ev.getOnset() * pixelPerSecond);
+               int pixCent = (int) ((ev.getOnset() - model.getOffset()) * pixelPerSecond);
                int pixHeight = this.getHeight() / 2 - circleSize / 2;
-               g.drawOval(pixCent, pixHeight, circleSize, circleSize);
+               g.drawOval(pixCent - circleSize / 2, pixHeight, circleSize, circleSize);
 
                // Draw the Desired onset in black
                g.setColor(Color.black);
-               int actPixCent = (int) (model.getScoreTime(ev) * pixelPerSecond);
-               g.drawOval(actPixCent, pixHeight, circleSize, circleSize);
+               int actPixCent = (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
+               g.drawOval(actPixCent - circleSize / 2, pixHeight + 2, circleSize, circleSize);
             }
 
          // Draw the bar lines if needed
@@ -92,7 +92,7 @@ public class ActionLine extends JPanel implements ModelListener
             g.setColor(Color.lightGray);
             for (double barTime : model.getBarTimes())
             {
-               int pixPos = (int) (barTime * pixelPerSecond);
+               int pixPos = (int) ((barTime - model.getOffset()) * pixelPerSecond);
                g.drawLine(pixPos, 0, pixPos, this.getHeight());
             }
          }

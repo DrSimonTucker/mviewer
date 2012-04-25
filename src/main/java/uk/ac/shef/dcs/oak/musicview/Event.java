@@ -16,6 +16,7 @@ public class Event
 
    /** The pitch/voice of the note */
    private final double pitch;
+
    /** The time in relation to the score that the event should occur */
    private final double scoreTime;
 

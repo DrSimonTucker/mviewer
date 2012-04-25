@@ -9,7 +9,9 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import uk.ac.shef.dcs.oak.musicview.view.ActionLine;
+import uk.ac.shef.dcs.oak.musicview.view.DriftLine;
 import uk.ac.shef.dcs.oak.musicview.view.SelectionPanel;
+import uk.ac.shef.dcs.oak.musicview.view.SummaryDriftLine;
 
 /**
  * Controls the whole shebang
@@ -44,10 +46,14 @@ public class Controller
       JFrame framer = new JFrame();
       SelectionPanel panel = new SelectionPanel(this);
 
-      JPanel infoPanel = new JPanel(new GridLayout(3, 1));
+      JPanel infoPanel = new JPanel(new GridLayout(7, 1));
+      infoPanel.add(new SummaryDriftLine(this));
       infoPanel.add(new ActionLine(this, 44));
+      infoPanel.add(new DriftLine(this, 44));
       infoPanel.add(new ActionLine(this, 40));
+      infoPanel.add(new DriftLine(this, 40));
       infoPanel.add(new ActionLine(this, 36));
+      infoPanel.add(new DriftLine(this, 36));
 
       framer.add(panel, BorderLayout.SOUTH);
       framer.add(infoPanel, BorderLayout.CENTER);
