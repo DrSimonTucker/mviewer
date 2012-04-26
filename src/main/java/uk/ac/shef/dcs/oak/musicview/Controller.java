@@ -48,8 +48,8 @@ public class Controller
 
       JPanel infoPanel = new JPanel(new GridLayout(7, 1));
       infoPanel.add(new SummaryDriftLine(this));
-      infoPanel.add(new ActionLine(this, 44));
-      infoPanel.add(new DriftLine(this, 44));
+      infoPanel.add(new ActionLine(this, 57));
+      infoPanel.add(new DriftLine(this, 57));
       infoPanel.add(new ActionLine(this, 40));
       infoPanel.add(new DriftLine(this, 40));
       infoPanel.add(new ActionLine(this, 36));

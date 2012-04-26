@@ -1,12 +1,15 @@
 package uk.ac.shef.dcs.oak.musicview;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import au.com.bytecode.opencsv.CSVReader;
@@ -253,8 +256,31 @@ public class Model
     */
    private static double convertPitch(final String pitchName)
    {
-      return 33;
+	   if (noteMap.size() == 0)
+		   loadNoteMap();
+      return noteMap.get(pitchName);
    }
+   
+   private static void loadNoteMap()
+   {
+	   double noteVal = 21;
+	   try
+	   {
+		   BufferedReader reader = new BufferedReader(new FileReader("midi.txt"));
+		   for(String line = reader.readLine() ; line != null ; line = reader.readLine())
+		   {
+			   noteMap.put(line.trim(), noteVal);
+			   noteVal = noteVal+1;
+		   }
+		   reader.close();
+	   }
+	   catch (IOException e)
+	   {
+		   e.printStackTrace();
+	   }
+   }
+   
+   private static Map<String, Double> noteMap = new TreeMap<String, Double>();
 
    /**
     * Generates a model given a file and other parameters
