@@ -125,11 +125,11 @@ public class SelectionPanel extends JPanel implements ModelListener
       // Add in the range slider
       JLabel zoomLabel = new JLabel("Zoom: ");
       add(zoomLabel);
-      slider = new RangeSlider(1, 15);
+      slider = new RangeSlider(0, 1);
       slider.setMajorTickSpacing(1);
       slider.setPaintTicks(true);
-      slider.setLowValue(1);
-      slider.setHighValue(15);
+      slider.setLowValue(0);
+      slider.setHighValue(1);
       add(slider);
       slider.addChangeListener(new ChangeListener()
       {
@@ -192,6 +192,11 @@ public class SelectionPanel extends JPanel implements ModelListener
       for (Integer trial : mod.getAllTrials())
          trialBoxModel.addElement(trial);
       trialBoxModel.setSelectedItem(mod.getSelectedTrial());
+
+      // Update the zoom slider
+      slider.setMaximum((int) (mod.getMaxBar() - 1));
+      slider.setMinimum(1);
+
       loading = false;
    }
 }
