@@ -3,7 +3,6 @@ package uk.ac.shef.dcs.oak.musicview;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.util.Collection;
-import java.util.LinkedList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -21,11 +20,27 @@ import uk.ac.shef.dcs.oak.musicview.view.SummaryDriftLine;
  */
 public class Controller
 {
-   /** Model listeners */
-   private final Collection<ModelListener> listeners = new LinkedList<ModelListener>();
+
+   /**
+    * Entry point
+    * 
+    * @param args
+    *           CLI
+    */
+   public static void main(final String[] args)
+   {
+      Controller cont = new Controller();
+      cont.run();
+   }
 
    /** The model used in the displays */
    private Model mod;
+
+   public Controller()
+   {
+      // Set up a default model
+      mod = new Model();
+   }
 
    /**
     * Adds a listener for models
@@ -35,7 +50,7 @@ public class Controller
     */
    public final void addListener(final ModelListener listener)
    {
-      listeners.add(listener);
+      mod.addListener(listener);
    }
 
    /**
@@ -72,28 +87,10 @@ public class Controller
     */
    public final void setModel(final Model model)
    {
+      Collection<ModelListener> listeners = mod.getListeners();
       mod = model;
-      updateNewModel();
-   }
-
-   /**
-    * Updates the listeners that we have a new model
-    */
-   private void updateNewModel()
-   {
-      for (ModelListener listener : listeners)
-         listener.newModelLoaded(mod);
-   }
-
-   /**
-    * Entry point
-    * 
-    * @param args
-    *           CLI
-    */
-   public static void main(final String[] args)
-   {
-      Controller cont = new Controller();
-      cont.run();
+      for (ModelListener listen : listeners)
+         mod.addListener(listen);
+      mod.forceUpdate();
    }
 }

@@ -22,14 +22,156 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class Model
 {
+   private static Map<String, Double> noteMap = new TreeMap<String, Double>();
+
+   /**
+    * Helper function to get the pitch value from the string
+    * 
+    * @param pitchName
+    *           The string name of the pitch value (e.g. A3)
+    * @return The corresponding pitch value
+    */
+   private static double convertPitch(final String pitchName)
+   {
+      if (noteMap.size() == 0)
+         loadNoteMap();
+      return noteMap.get(pitchName);
+   }
+
+   /**
+    * Generates a model given a file and other parameters
+    * 
+    * @param f
+    *           File to read
+    * @param subject
+    *           THe subject to consider
+    * @param trial
+    *           The trial to consider
+    * @param lower
+    *           the Lower bound of zoom
+    * @param upper
+    *           the Upper bound of zoom
+    * @param barLength
+    *           The length of a bar
+    * @return A valid model for this subject and trial
+    * @throws IOException
+    *            if something goes wrong reading the file
+    */
+   public static final Model generateModel(final File f, final int subject, final int trial,
+         final double lower, final double upper, final double bLength) throws IOException
+   {
+      Model mod = new Model();
+      mod.selectedSubject = subject;
+      mod.selectedTrial = trial;
+      mod.lowerBound = lower - 1;
+      mod.upperBound = upper + 1;
+      mod.barLength = bLength;
+
+      CSVReader reader = new CSVReader(new FileReader(f));
+      String[] headers = reader.readNext();
+      int onsetPos, scoreTime, velocity, voice, subj, tri;
+      onsetPos = getHeader(headers, "Onset");
+      scoreTime = getHeader(headers, "ScoreTime");
+      velocity = getHeader(headers, "Velocity");
+      voice = getHeader(headers, "Voice");
+      subj = getHeader(headers, "Subject");
+      tri = getHeader(headers, "Trial");
+      int pitch = getHeader(headers, "Pitch");
+
+      // Is the data pitched or voiced?
+      boolean pitched = (pitch != -1);
+
+      // Two types of data
+      if (subj == -1)
+         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
+         {
+            double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
+            if (tScoreTime >= lower && tScoreTime <= upper)
+            {
+               Event ev = new Event(Double.parseDouble(nextLine[velocity]),
+                     Double.parseDouble(nextLine[onsetPos]), Double.parseDouble(nextLine[voice]),
+                     Double.parseDouble(nextLine[scoreTime]));
+               if (pitched)
+                  ev = new Event(Double.parseDouble(nextLine[velocity]),
+                        Double.parseDouble(nextLine[onsetPos]), convertPitch(nextLine[pitch]),
+                        Double.parseDouble(nextLine[scoreTime]));
+
+               mod.events.add(ev);
+            }
+         }
+      else
+         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
+         {
+            if (Integer.parseInt(nextLine[subj]) == subject)
+            {
+               if (Integer.parseInt(nextLine[tri]) == trial)
+               {
+                  double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
+                  if (tScoreTime >= lower && tScoreTime <= upper)
+                  {
+                     Event ev = new Event(Double.parseDouble(nextLine[velocity]),
+                           Double.parseDouble(nextLine[onsetPos]),
+                           Double.parseDouble(nextLine[voice]),
+                           Double.parseDouble(nextLine[scoreTime]));
+                     mod.events.add(ev);
+                  }
+               }
+
+               mod.trials.add(Integer.parseInt(nextLine[tri]));
+            }
+            mod.subjects.add(Integer.parseInt(nextLine[subj]));
+
+         }
+      return mod;
+   }
+
+   /**
+    * Helper function to get the index of a string in the array
+    * 
+    * @param list
+    *           THe list of headers
+    * @param key
+    *           THe key to search for
+    * @return The index of the key within the list
+    */
+   private static int getHeader(final String[] list, final String key)
+   {
+      for (int i = 0; i < list.length; i++)
+         if (list[i].equals(key))
+            return i;
+      return -1;
+   }
+
+   private static void loadNoteMap()
+   {
+      double noteVal = 21;
+      try
+      {
+         BufferedReader reader = new BufferedReader(new FileReader("midi.txt"));
+         for (String line = reader.readLine(); line != null; line = reader.readLine())
+         {
+            noteMap.put(line.trim(), noteVal);
+            noteVal = noteVal + 1;
+         }
+         reader.close();
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+      }
+   }
+
    /** The length of a bar in seconds */
-   private final double barLength = 1.461650;
+   private double barLength = 1.461650;
 
    /** The bottom pitch */
    private double bottomPitch = 0.0;
 
    /** The collection of events that this model represents */
    private final List<Event> events = new LinkedList<Event>();
+
+   /** Model listeners */
+   private final Collection<ModelListener> listeners = new LinkedList<ModelListener>();
 
    /** The lower bound to zoom to */
    private double lowerBound = 1;
@@ -48,6 +190,22 @@ public class Model
 
    /** The upper bound to zoom to */
    private double upperBound = 16;
+
+   /**
+    * Adds a listener for models
+    * 
+    * @param listener
+    *           The listener to add
+    */
+   public final void addListener(final ModelListener listener)
+   {
+      listeners.add(listener);
+   }
+
+   public void forceUpdate()
+   {
+      updateListeners();
+   }
 
    /**
     * Gets all the available subjects for this file
@@ -90,6 +248,11 @@ public class Model
    public final Collection<Event> getEvents()
    {
       return events;
+   }
+
+   public Collection<ModelListener> getListeners()
+   {
+      return listeners;
    }
 
    /**
@@ -233,6 +396,21 @@ public class Model
             / (getMaxVelocity(ev.getPitch()) - getMinVelocity(ev.getPitch()));
    }
 
+   public void setBarLength(double val)
+   {
+      barLength = val;
+      updateListeners();
+   }
+
+   /**
+    * Updates the listeners that we have a new model
+    */
+   private void updateListeners()
+   {
+      for (ModelListener listener : listeners)
+         listener.newModelLoaded(this);
+   }
+
    /**
     * Zooms in the model to a given range
     * 
@@ -245,141 +423,5 @@ public class Model
    {
       lowerBound = lower;
       upperBound = upper;
-   }
-
-   /**
-    * Helper function to get the pitch value from the string
-    * 
-    * @param pitchName
-    *           The string name of the pitch value (e.g. A3)
-    * @return The corresponding pitch value
-    */
-   private static double convertPitch(final String pitchName)
-   {
-	   if (noteMap.size() == 0)
-		   loadNoteMap();
-      return noteMap.get(pitchName);
-   }
-   
-   private static void loadNoteMap()
-   {
-	   double noteVal = 21;
-	   try
-	   {
-		   BufferedReader reader = new BufferedReader(new FileReader("midi.txt"));
-		   for(String line = reader.readLine() ; line != null ; line = reader.readLine())
-		   {
-			   noteMap.put(line.trim(), noteVal);
-			   noteVal = noteVal+1;
-		   }
-		   reader.close();
-	   }
-	   catch (IOException e)
-	   {
-		   e.printStackTrace();
-	   }
-   }
-   
-   private static Map<String, Double> noteMap = new TreeMap<String, Double>();
-
-   /**
-    * Generates a model given a file and other parameters
-    * 
-    * @param f
-    *           File to read
-    * @param subject
-    *           THe subject to consider
-    * @param trial
-    *           The trial to consider
-    * @param lower
-    *           the Lower bound of zoom
-    * @param upper
-    *           the Upper bound of zoom
-    * @return A valid model for this subject and trial
-    * @throws IOException
-    *            if something goes wrong reading the file
-    */
-   public static final Model generateModel(final File f, final int subject, final int trial,
-         final double lower, final double upper) throws IOException
-   {
-      Model mod = new Model();
-      mod.selectedSubject = subject;
-      mod.selectedTrial = trial;
-      mod.lowerBound = lower - 1;
-      mod.upperBound = upper + 1;
-
-      CSVReader reader = new CSVReader(new FileReader(f));
-      String[] headers = reader.readNext();
-      int onsetPos, scoreTime, velocity, voice, subj, tri;
-      onsetPos = getHeader(headers, "Onset");
-      scoreTime = getHeader(headers, "ScoreTime");
-      velocity = getHeader(headers, "Velocity");
-      voice = getHeader(headers, "Voice");
-      subj = getHeader(headers, "Subject");
-      tri = getHeader(headers, "Trial");
-      int pitch = getHeader(headers, "Pitch");
-
-      // Is the data pitched or voiced?
-      boolean pitched = (pitch != -1);
-
-      // Two types of data
-      if (subj == -1)
-         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
-         {
-            double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-            if (tScoreTime >= lower && tScoreTime <= upper)
-            {
-               Event ev = new Event(Double.parseDouble(nextLine[velocity]),
-                     Double.parseDouble(nextLine[onsetPos]), Double.parseDouble(nextLine[voice]),
-                     Double.parseDouble(nextLine[scoreTime]));
-               if (pitched)
-                  ev = new Event(Double.parseDouble(nextLine[velocity]),
-                        Double.parseDouble(nextLine[onsetPos]), convertPitch(nextLine[pitch]),
-                        Double.parseDouble(nextLine[scoreTime]));
-
-               mod.events.add(ev);
-            }
-         }
-      else
-         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
-         {
-            if (Integer.parseInt(nextLine[subj]) == subject)
-            {
-               if (Integer.parseInt(nextLine[tri]) == trial)
-               {
-                  double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-                  if (tScoreTime >= lower && tScoreTime <= upper)
-                  {
-                     Event ev = new Event(Double.parseDouble(nextLine[velocity]),
-                           Double.parseDouble(nextLine[onsetPos]),
-                           Double.parseDouble(nextLine[voice]),
-                           Double.parseDouble(nextLine[scoreTime]));
-                     mod.events.add(ev);
-                  }
-               }
-
-               mod.trials.add(Integer.parseInt(nextLine[tri]));
-            }
-            mod.subjects.add(Integer.parseInt(nextLine[subj]));
-
-         }
-      return mod;
-   }
-
-   /**
-    * Helper function to get the index of a string in the array
-    * 
-    * @param list
-    *           THe list of headers
-    * @param key
-    *           THe key to search for
-    * @return The index of the key within the list
-    */
-   private static int getHeader(final String[] list, final String key)
-   {
-      for (int i = 0; i < list.length; i++)
-         if (list[i].equals(key))
-            return i;
-      return -1;
    }
 }

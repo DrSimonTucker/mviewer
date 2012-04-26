@@ -12,6 +12,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -30,13 +31,19 @@ import com.jidesoft.swing.RangeSlider;
  */
 public class SelectionPanel extends JPanel implements ModelListener
 {
+   JTextField barLength;
+
    /** Flag to prevent overlap when loading new models */
    private boolean loading = false;
 
    /** The controller that the selection panel links to */
    private final Controller mainController;
 
-   /** The file that has been selected by the user */
+   /**
+    * THe model that underlies the
+    * 
+    * /** The file that has been selected by the user
+    */
    private File selectedFile;
 
    RangeSlider slider;
@@ -65,6 +72,19 @@ public class SelectionPanel extends JPanel implements ModelListener
     */
    private void initGUI()
    {
+      JLabel barLabel = new JLabel("Bar Length: ");
+      add(barLabel);
+      barLength = new JTextField("1.461650");
+      add(barLength);
+      barLength.addActionListener(new ActionListener()
+      {
+         @Override
+         public void actionPerformed(final ActionEvent e)
+         {
+            loadNewModel(false);
+         }
+      });
+
       JButton loadButton = new JButton("Load");
       add(loadButton);
       loadButton.addActionListener(new ActionListener()
@@ -149,7 +169,8 @@ public class SelectionPanel extends JPanel implements ModelListener
             if (subjNumber == null)
                subjNumber = 1;
             mainController.setModel(Model.generateModel(selectedFile, subjNumber, trialNumber,
-                  slider.getLowValue(), slider.getHighValue() + 1));
+                  slider.getLowValue(), slider.getHighValue() + 1,
+                  Double.parseDouble(barLength.getText())));
          }
          catch (IOException e)
          {
