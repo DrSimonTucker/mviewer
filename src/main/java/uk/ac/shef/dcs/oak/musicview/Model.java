@@ -245,6 +245,18 @@ public class Model
    }
 
    /**
+    * Helper function to get the pitch value from the string
+    * 
+    * @param pitchName
+    *           The string name of the pitch value (e.g. A3)
+    * @return The corresponding pitch value
+    */
+   private static double convertPitch(final String pitchName)
+   {
+      return 33;
+   }
+
+   /**
     * Generates a model given a file and other parameters
     * 
     * @param f
@@ -279,6 +291,10 @@ public class Model
       voice = getHeader(headers, "Voice");
       subj = getHeader(headers, "Subject");
       tri = getHeader(headers, "Trial");
+      int pitch = getHeader(headers, "Pitch");
+
+      // Is the data pitched or voiced?
+      boolean pitched = (pitch != -1);
 
       // Two types of data
       if (subj == -1)
@@ -290,6 +306,11 @@ public class Model
                Event ev = new Event(Double.parseDouble(nextLine[velocity]),
                      Double.parseDouble(nextLine[onsetPos]), Double.parseDouble(nextLine[voice]),
                      Double.parseDouble(nextLine[scoreTime]));
+               if (pitched)
+                  ev = new Event(Double.parseDouble(nextLine[velocity]),
+                        Double.parseDouble(nextLine[onsetPos]), convertPitch(nextLine[pitch]),
+                        Double.parseDouble(nextLine[scoreTime]));
+
                mod.events.add(ev);
             }
          }
