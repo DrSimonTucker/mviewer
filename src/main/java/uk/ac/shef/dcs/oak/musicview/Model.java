@@ -433,19 +433,18 @@ public class Model
                            Double.parseDouble(nextLine[scoreTime]));
                      mod.events.add(ev);
                   }
+                  mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
+                  mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
+                  mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
+
+                  if (!nextLine[scoreTime].contains("."))
+                     barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
+                           Double.parseDouble(nextLine[onsetPos]));
                }
 
                mod.trials.add(Integer.parseInt(nextLine[tri]));
             }
             mod.subjects.add(Integer.parseInt(nextLine[subj]));
-
-            mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
-            mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
-            mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
-
-            if (!nextLine[scoreTime].contains("."))
-               barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
-                     Double.parseDouble(nextLine[onsetPos]));
 
          }
 
