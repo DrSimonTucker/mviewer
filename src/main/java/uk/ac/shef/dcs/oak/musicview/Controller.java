@@ -21,21 +21,12 @@ import uk.ac.shef.dcs.oak.musicview.view.SummaryDriftLine;
 public class Controller
 {
 
-   /**
-    * Entry point
-    * 
-    * @param args
-    *           CLI
-    */
-   public static void main(final String[] args)
-   {
-      Controller cont = new Controller();
-      cont.run();
-   }
-
    /** The model used in the displays */
    private Model mod;
 
+   /**
+    * Constructor
+    */
    public Controller()
    {
       // Set up a default model
@@ -63,8 +54,8 @@ public class Controller
 
       JPanel infoPanel = new JPanel(new GridLayout(7, 1));
       infoPanel.add(new SummaryDriftLine(this));
-      infoPanel.add(new ActionLine(this, 57));
-      infoPanel.add(new DriftLine(this, 57));
+      infoPanel.add(new ActionLine(this, 44));
+      infoPanel.add(new DriftLine(this, 44));
       infoPanel.add(new ActionLine(this, 40));
       infoPanel.add(new DriftLine(this, 40));
       infoPanel.add(new ActionLine(this, 36));
@@ -92,5 +83,17 @@ public class Controller
       for (ModelListener listen : listeners)
          mod.addListener(listen);
       mod.forceUpdate();
+   }
+
+   /**
+    * Entry point
+    * 
+    * @param args
+    *           CLI
+    */
+   public static void main(final String[] args)
+   {
+      Controller cont = new Controller();
+      cont.run();
    }
 }

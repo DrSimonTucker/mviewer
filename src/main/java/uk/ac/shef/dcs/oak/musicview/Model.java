@@ -42,6 +42,7 @@ public class Model
    /** The lower bound to zoom to */
    private double lowerBound = 1;
 
+   /** The maximum bar number seen overall */
    private double maxBar = -1;
 
    /** The selected subject */
@@ -98,7 +99,12 @@ public class Model
       return trials;
    }
 
-   public double getAverageBarLength()
+   /**
+    * Gets the average length of a bar
+    * 
+    * @return The average length of a bar as a double (in seconds)
+    */
+   public final double getAverageBarLength()
    {
       return avgBarLength;
    }
@@ -110,7 +116,6 @@ public class Model
     */
    public final Collection<Double> getBarTimes()
    {
-      System.out.println("UPPER = " + upperBound);
       Collection<Double> barTimes = new LinkedList<Double>();
       for (int i = (int) lowerBound; i <= upperBound; i++)
          barTimes.add(i * barLength);
@@ -374,7 +379,7 @@ public class Model
       // Is the data pitched or voiced?
       boolean pitched = (pitch != -1);
 
-      Map<Double, Double> barTimeMap = new TreeMap<Double, Double>();
+      Map<Integer, Double> barTimeMap = new TreeMap<Integer, Double>();
 
       // Two types of data
       if (subj == -1)
@@ -393,11 +398,12 @@ public class Model
 
                mod.events.add(ev);
 
-               mod.maxBar = Math.max(mod.upperBound, Double.parseDouble(nextLine[scoreTime]));
                if (!nextLine[scoreTime].contains("."))
-                  barTimeMap.put(Double.parseDouble(nextLine[scoreTime]),
+                  barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                         Double.parseDouble(nextLine[onsetPos]));
             }
+            System.out.println(nextLine[scoreTime]);
+            mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
          }
       else
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
@@ -421,10 +427,10 @@ public class Model
             }
             mod.subjects.add(Integer.parseInt(nextLine[subj]));
 
-            mod.maxBar = Math.max(mod.upperBound, Double.parseDouble(nextLine[scoreTime]));
+            mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
 
             if (!nextLine[scoreTime].contains("."))
-               barTimeMap.put(Double.parseDouble(nextLine[scoreTime]),
+               barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                      Double.parseDouble(nextLine[onsetPos]));
 
          }
@@ -432,12 +438,14 @@ public class Model
       // Set the average bar time
       double sum = 0;
       double count = 0;
-      for (double i = 1; i < mod.getMaxBar() - 1; i += 1)
+      System.out.println("KEYS = " + barTimeMap.keySet());
+      for (int i = 1; i < mod.getMaxBar() - 1; i += 1)
          if (barTimeMap.containsKey(i) && barTimeMap.containsKey(i + 1))
          {
             sum += barTimeMap.get(i + 1) - barTimeMap.get(i);
             count++;
          }
+      System.out.println("COUNT = " + count);
       mod.avgBarLength = sum / count;
       mod.barLength = mod.avgBarLength;
 

@@ -69,9 +69,6 @@ public class DriftLine extends JPanel implements ModelListener
       {
          double pixelsPerSecond = this.getWidth() / model.getTotalLength();
 
-         int currY = this.getHeight() / 2;
-         int currX = 0;
-
          Map<Double, Double> drifts = new TreeMap<Double, Double>();
          double maxDrift = 0;
          for (Event ev : model.getEvents())
@@ -82,13 +79,16 @@ public class DriftLine extends JPanel implements ModelListener
                maxDrift = Math.max(maxDrift, Math.abs(drift));
             }
 
+         int currY = this.getHeight() / 2;
+         int currX = -1;
          // Paint the line
          for (Entry<Double, Double> entry : drifts.entrySet())
          {
             int pixY = this.getHeight() / 2
                   - (int) ((entry.getValue() / maxDrift) * this.getHeight() / 2);
             int pixX = (int) (pixelsPerSecond * entry.getKey());
-            g.drawLine(currX, currY, pixX, pixY);
+            if (currX > 0)
+               g.drawLine(currX, currY, pixX, pixY);
             currX = pixX;
             currY = pixY;
          }

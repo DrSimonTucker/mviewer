@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.NumberFormat;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -168,9 +169,14 @@ public class SelectionPanel extends JPanel implements ModelListener
                trialNumber = 1;
             if (subjNumber == null)
                subjNumber = 1;
-            Model mod = Model.generateModel(selectedFile, subjNumber, trialNumber,
-                  slider.getLowValue(), slider.getHighValue() + 1,
-                  Double.parseDouble(barLength.getText()));
+            Model mod;
+            if (chooseFile)
+               mod = Model.generateModel(selectedFile, subjNumber, trialNumber, 1, 100,
+                     Double.parseDouble(barLength.getText()));
+            else
+               mod = Model.generateModel(selectedFile, subjNumber, trialNumber,
+                     slider.getLowValue(), slider.getHighValue() + 1,
+                     Double.parseDouble(barLength.getText()));
             mainController.setModel(mod);
 
             if (chooseFile)
@@ -198,11 +204,14 @@ public class SelectionPanel extends JPanel implements ModelListener
       trialBoxModel.setSelectedItem(mod.getSelectedTrial());
 
       // Update the zoom slider
+      System.out.println("MAX = " + mod.getMaxBar());
       slider.setMaximum((int) (mod.getMaxBar() - 1));
       slider.setMinimum(1);
 
       // get the average bar length and updated accordingly
-      barLength.setText("" + mod.getAverageBarLength());
+      NumberFormat nf = NumberFormat.getNumberInstance();
+      nf.setMaximumFractionDigits(3);
+      barLength.setText(nf.format(mod.getAverageBarLength()));
 
       loading = false;
    }
