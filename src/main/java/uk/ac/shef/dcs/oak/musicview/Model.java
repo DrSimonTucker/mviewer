@@ -45,6 +45,10 @@ public class Model
    /** The maximum bar number seen overall */
    private double maxBar = -1;
 
+   private double minBar = Double.MAX_VALUE;
+
+   private double minTime = Double.MAX_VALUE;
+
    /** The selected subject */
    private Integer selectedSubject = -1;
 
@@ -245,7 +249,7 @@ public class Model
     */
    public final double getScoreTime(final Event ev)
    {
-      return ev.getBar() * barLength;
+      return ev.getBar() * barLength - (avgBarLength * minBar);
    }
 
    /**
@@ -293,7 +297,13 @@ public class Model
             / (getMaxVelocity(ev.getPitch()) - getMinVelocity(ev.getPitch()));
    }
 
-   public void setBarLength(double val)
+   /**
+    * Sets the length of a bar
+    * 
+    * @param val
+    *           The length of a bar in seconds
+    */
+   public final void setBarLength(final double val)
    {
       barLength = val;
       updateListeners();
@@ -404,6 +414,8 @@ public class Model
             }
             System.out.println(nextLine[scoreTime]);
             mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
+            mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
+            mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
          }
       else
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
@@ -428,12 +440,18 @@ public class Model
             mod.subjects.add(Integer.parseInt(nextLine[subj]));
 
             mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
+            mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
+            mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
 
             if (!nextLine[scoreTime].contains("."))
                barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                      Double.parseDouble(nextLine[onsetPos]));
 
          }
+
+      // Offset all the times to start from zero
+      for (Event ev : mod.events)
+         ev.offsetOnsetTime(mod.minTime);
 
       // Set the average bar time
       double sum = 0;
@@ -469,6 +487,9 @@ public class Model
       return -1;
    }
 
+   /**
+    * Loads the note map
+    */
    private static void loadNoteMap()
    {
       double noteVal = 21;

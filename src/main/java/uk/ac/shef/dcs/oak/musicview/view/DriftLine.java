@@ -74,6 +74,7 @@ public class DriftLine extends JPanel implements ModelListener
          for (Event ev : model.getEvents())
             if (isValidEvent(ev))
             {
+               System.out.println(ev.getOnset() + " and " + model.getScoreTime(ev));
                double drift = ev.getOnset() - model.getScoreTime(ev);
                drifts.put(model.getScoreTime(ev) - model.getOffset(), drift);
                maxDrift = Math.max(maxDrift, Math.abs(drift));

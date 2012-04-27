@@ -12,7 +12,7 @@ public class Event
    private final double intenstiy;
 
    /** The onset time of the event in seconds */
-   private final double onsetTime;
+   private double onsetTime;
 
    /** The pitch/voice of the note */
    private final double pitch;
@@ -78,5 +78,10 @@ public class Event
    public final double getVelocity()
    {
       return intenstiy;
+   }
+
+   public void offsetOnsetTime(double offsetValue)
+   {
+      onsetTime = onsetTime - offsetValue;
    }
 }
