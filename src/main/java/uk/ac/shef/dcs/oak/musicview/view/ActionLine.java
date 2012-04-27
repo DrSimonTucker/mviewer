@@ -21,11 +21,13 @@ public class ActionLine extends JPanel implements ModelListener
    /** Flag for painting the bar lines */
    private static final boolean BAR_LINES = true;
 
+   public static final int LEFT_MARGIN = 20;
+
    /** Margins for plotting */
    private static final int MARGIN = 5;
-
    /** Size of the circle */
    private static final int MAX_CIRCLE_SIZE = 40;
+
    /** Size of the circle */
    private static final int MIN_CIRCLE_SIZE = 10;
 
@@ -64,7 +66,7 @@ public class ActionLine extends JPanel implements ModelListener
       if (model != null)
       {
          // Do some housekeeping
-         double pixelPerSecond = this.getWidth() / model.getTotalLength();
+         double pixelPerSecond = (this.getWidth() - LEFT_MARGIN) / model.getTotalLength();
 
          // Plot the events
          for (Event ev : model.getEvents())
@@ -76,13 +78,15 @@ public class ActionLine extends JPanel implements ModelListener
 
                // Draw a circle at the relevant point and the relevant pitch
                g.setColor(Color.RED);
-               int pixCent = (int) ((ev.getOnset() - model.getOffset()) * pixelPerSecond);
+               int pixCent = LEFT_MARGIN
+                     + (int) ((ev.getOnset() - model.getOffset()) * pixelPerSecond);
                int pixHeight = this.getHeight() / 2 - circleSize / 2;
                g.drawOval(pixCent - circleSize / 2, pixHeight, circleSize, circleSize);
 
                // Draw the Desired onset in black
                g.setColor(Color.black);
-               int actPixCent = (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
+               int actPixCent = LEFT_MARGIN
+                     + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
                g.drawOval(actPixCent - circleSize / 2, pixHeight + 2, circleSize, circleSize);
             }
 
@@ -92,7 +96,7 @@ public class ActionLine extends JPanel implements ModelListener
             g.setColor(Color.lightGray);
             for (double barTime : model.getBarTimes())
             {
-               int pixPos = (int) ((barTime - model.getOffset()) * pixelPerSecond);
+               int pixPos = LEFT_MARGIN + (int) ((barTime - model.getOffset()) * pixelPerSecond);
                g.drawLine(pixPos, 0, pixPos, this.getHeight());
             }
          }
