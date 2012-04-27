@@ -168,9 +168,13 @@ public class SelectionPanel extends JPanel implements ModelListener
                trialNumber = 1;
             if (subjNumber == null)
                subjNumber = 1;
-            mainController.setModel(Model.generateModel(selectedFile, subjNumber, trialNumber,
+            Model mod = Model.generateModel(selectedFile, subjNumber, trialNumber,
                   slider.getLowValue(), slider.getHighValue() + 1,
-                  Double.parseDouble(barLength.getText())));
+                  Double.parseDouble(barLength.getText()));
+            mainController.setModel(mod);
+
+            if (chooseFile)
+               slider.setHighValue((int) mod.getMaxBar());
          }
          catch (IOException e)
          {
@@ -196,6 +200,9 @@ public class SelectionPanel extends JPanel implements ModelListener
       // Update the zoom slider
       slider.setMaximum((int) (mod.getMaxBar() - 1));
       slider.setMinimum(1);
+
+      // get the average bar length and updated accordingly
+      barLength.setText("" + mod.getAverageBarLength());
 
       loading = false;
    }

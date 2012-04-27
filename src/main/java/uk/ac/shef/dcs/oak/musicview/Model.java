@@ -25,6 +25,8 @@ public class Model
    /** Mapping from note names to their corresponding pitch number */
    private static Map<String, Double> noteMap = new TreeMap<String, Double>();
 
+   private double avgBarLength;
+
    /** The length of a bar in seconds */
    private double barLength = 1;
 
@@ -39,6 +41,8 @@ public class Model
 
    /** The lower bound to zoom to */
    private double lowerBound = 1;
+
+   private double maxBar = -1;
 
    /** The selected subject */
    private Integer selectedSubject = -1;
@@ -94,6 +98,11 @@ public class Model
       return trials;
    }
 
+   public double getAverageBarLength()
+   {
+      return avgBarLength;
+   }
+
    /**
     * Gets the times in seconds of each bar
     * 
@@ -101,6 +110,7 @@ public class Model
     */
    public final Collection<Double> getBarTimes()
    {
+      System.out.println("UPPER = " + upperBound);
       Collection<Double> barTimes = new LinkedList<Double>();
       for (int i = (int) lowerBound; i <= upperBound; i++)
          barTimes.add(i * barLength);
@@ -134,7 +144,7 @@ public class Model
     */
    public final double getMaxBar()
    {
-      return upperBound;
+      return maxBar;
    }
 
    /**
@@ -364,6 +374,8 @@ public class Model
       // Is the data pitched or voiced?
       boolean pitched = (pitch != -1);
 
+      Map<Double, Double> barTimeMap = new TreeMap<Double, Double>();
+
       // Two types of data
       if (subj == -1)
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
@@ -381,7 +393,10 @@ public class Model
 
                mod.events.add(ev);
 
-               mod.upperBound = Math.max(mod.upperBound, Double.parseDouble(nextLine[scoreTime]));
+               mod.maxBar = Math.max(mod.upperBound, Double.parseDouble(nextLine[scoreTime]));
+               if (!nextLine[scoreTime].contains("."))
+                  barTimeMap.put(Double.parseDouble(nextLine[scoreTime]),
+                        Double.parseDouble(nextLine[onsetPos]));
             }
          }
       else
@@ -406,9 +421,26 @@ public class Model
             }
             mod.subjects.add(Integer.parseInt(nextLine[subj]));
 
-            mod.upperBound = Math.max(mod.upperBound, Double.parseDouble(nextLine[scoreTime]));
+            mod.maxBar = Math.max(mod.upperBound, Double.parseDouble(nextLine[scoreTime]));
+
+            if (!nextLine[scoreTime].contains("."))
+               barTimeMap.put(Double.parseDouble(nextLine[scoreTime]),
+                     Double.parseDouble(nextLine[onsetPos]));
 
          }
+
+      // Set the average bar time
+      double sum = 0;
+      double count = 0;
+      for (double i = 1; i < mod.getMaxBar() - 1; i += 1)
+         if (barTimeMap.containsKey(i) && barTimeMap.containsKey(i + 1))
+         {
+            sum += barTimeMap.get(i + 1) - barTimeMap.get(i);
+            count++;
+         }
+      mod.avgBarLength = sum / count;
+      mod.barLength = mod.avgBarLength;
+
       return mod;
    }
 
