@@ -25,9 +25,9 @@ public class ActionLine extends JPanel implements ModelListener
 
    /** Margins for plotting */
    private static final int MARGIN = 5;
+
    /** Size of the circle */
    private static final int MAX_CIRCLE_SIZE = 40;
-
    /** Size of the circle */
    private static final int MIN_CIRCLE_SIZE = 10;
 
@@ -51,6 +51,11 @@ public class ActionLine extends JPanel implements ModelListener
       chosenVoice = voice;
    }
 
+   protected boolean isValidEvent(Event ev)
+   {
+      return ev.getPitch() == chosenVoice;
+   }
+
    @Override
    public final void newModelLoaded(final Model mod)
    {
@@ -70,7 +75,7 @@ public class ActionLine extends JPanel implements ModelListener
 
          // Plot the events
          for (Event ev : model.getEvents())
-            if (ev.getPitch() == chosenVoice)
+            if (isValidEvent(ev))
             {
                double percVelocity = model.getVelocityPerc(ev);
                int circleSize = (int) (percVelocity * (MAX_CIRCLE_SIZE - MIN_CIRCLE_SIZE))

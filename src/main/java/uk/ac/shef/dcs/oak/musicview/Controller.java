@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import uk.ac.shef.dcs.oak.musicview.view.ActionLine;
 import uk.ac.shef.dcs.oak.musicview.view.DriftLine;
 import uk.ac.shef.dcs.oak.musicview.view.SelectionPanel;
+import uk.ac.shef.dcs.oak.musicview.view.SummaryActionLine;
 import uk.ac.shef.dcs.oak.musicview.view.SummaryDriftLine;
 
 /**
@@ -52,7 +53,8 @@ public class Controller
       JFrame framer = new JFrame();
       SelectionPanel panel = new SelectionPanel(this);
 
-      JPanel infoPanel = new JPanel(new GridLayout(7, 1));
+      JPanel infoPanel = new JPanel(new GridLayout(8, 1));
+      infoPanel.add(new SummaryActionLine(this));
       infoPanel.add(new SummaryDriftLine(this));
       infoPanel.add(new ActionLine(this, 44));
       infoPanel.add(new DriftLine(this, 44));

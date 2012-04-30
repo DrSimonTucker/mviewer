@@ -372,7 +372,7 @@ public class Model
       mod.selectedSubject = subject;
       mod.selectedTrial = trial;
       mod.lowerBound = lower - 1;
-      mod.upperBound = upper + 1;
+      mod.upperBound = upper;
       mod.barLength = bLength;
 
       CSVReader reader = new CSVReader(new FileReader(f));
@@ -455,14 +455,12 @@ public class Model
       // Set the average bar time
       double sum = 0;
       double count = 0;
-      System.out.println("KEYS = " + barTimeMap.keySet());
       for (int i = 1; i < mod.getMaxBar() - 1; i += 1)
          if (barTimeMap.containsKey(i) && barTimeMap.containsKey(i + 1))
          {
             sum += barTimeMap.get(i + 1) - barTimeMap.get(i);
             count++;
          }
-      System.out.println("COUNT = " + count);
       mod.avgBarLength = sum / count;
       mod.barLength = mod.avgBarLength;
 
