@@ -80,7 +80,13 @@ public class Event
       return intenstiy;
    }
 
-   public void offsetOnsetTime(double offsetValue)
+   /**
+    * The offset of the onset time ho ho
+    * 
+    * @param offsetValue
+    *           offset value in seconds
+    */
+   public final void offsetOnsetTime(final double offsetValue)
    {
       onsetTime = onsetTime - offsetValue;
    }

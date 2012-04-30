@@ -21,10 +21,8 @@ public class ActionLine extends JPanel implements ModelListener
    /** Flag for painting the bar lines */
    private static final boolean BAR_LINES = true;
 
+   /** The left margin in pixels */
    public static final int LEFT_MARGIN = 20;
-
-   /** Margins for plotting */
-   private static final int MARGIN = 5;
 
    /** Size of the circle */
    private static final int MAX_CIRCLE_SIZE = 40;
@@ -51,7 +49,14 @@ public class ActionLine extends JPanel implements ModelListener
       chosenVoice = voice;
    }
 
-   protected boolean isValidEvent(Event ev)
+   /**
+    * Determines if the given event is valid or not
+    * 
+    * @param ev
+    *           The event to test
+    * @return boolean whether the event is valid
+    */
+   protected boolean isValidEvent(final Event ev)
    {
       return ev.getPitch() == chosenVoice;
    }

@@ -32,7 +32,8 @@ import com.jidesoft.swing.RangeSlider;
  */
 public class SelectionPanel extends JPanel implements ModelListener
 {
-   JTextField barLength;
+   /** Text field capturing the bar length */
+   private JTextField barLength;
 
    /** Flag to prevent overlap when loading new models */
    private boolean loading = false;
@@ -47,7 +48,8 @@ public class SelectionPanel extends JPanel implements ModelListener
     */
    private File selectedFile;
 
-   RangeSlider slider;
+   /** Slider determining the bar range */
+   private RangeSlider slider;
 
    /** The combo box model for subjects */
    private final DefaultComboBoxModel subjectBoxModel = new DefaultComboBoxModel();
@@ -171,8 +173,7 @@ public class SelectionPanel extends JPanel implements ModelListener
                subjNumber = 1;
             Model mod;
             if (chooseFile)
-               mod = Model.generateModel(selectedFile, subjNumber, trialNumber, 1, 100,
-                     Double.parseDouble(barLength.getText()));
+               mod = Model.generateModel(selectedFile, subjNumber, trialNumber, 1, 100, -1.0);
             else
                mod = Model.generateModel(selectedFile, subjNumber, trialNumber,
                      slider.getLowValue(), slider.getHighValue() + 1,

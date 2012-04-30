@@ -2,8 +2,11 @@ package uk.ac.shef.dcs.oak.musicview;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +28,7 @@ public class Model
    /** Mapping from note names to their corresponding pitch number */
    private static Map<String, Double> noteMap = new TreeMap<String, Double>();
 
+   /** The average length of a bar in seconds */
    private double avgBarLength;
 
    /** The length of a bar in seconds */
@@ -45,8 +49,10 @@ public class Model
    /** The maximum bar number seen overall */
    private double maxBar = -1;
 
+   /** The minimum bar number */
    private double minBar = Double.MAX_VALUE;
 
+   /** The lowest recorded time */
    private double minTime = Double.MAX_VALUE;
 
    /** The selected subject */
@@ -453,16 +459,24 @@ public class Model
          ev.offsetOnsetTime(mod.minTime);
 
       // Set the average bar time
-      double sum = 0;
-      double count = 0;
-      for (int i = 1; i < mod.getMaxBar() - 1; i += 1)
-         if (barTimeMap.containsKey(i) && barTimeMap.containsKey(i + 1))
-         {
-            sum += barTimeMap.get(i + 1) - barTimeMap.get(i);
-            count++;
-         }
-      mod.avgBarLength = sum / count;
-      mod.barLength = mod.avgBarLength;
+      if (bLength < 0)
+      {
+         double sum = 0;
+         double count = 0;
+         for (int i = 1; i < mod.getMaxBar() - 1; i += 1)
+            if (barTimeMap.containsKey(i) && barTimeMap.containsKey(i + 1))
+            {
+               sum += barTimeMap.get(i + 1) - barTimeMap.get(i);
+               count++;
+            }
+         mod.avgBarLength = sum / count;
+         mod.barLength = mod.avgBarLength;
+      }
+      else
+      {
+         mod.avgBarLength = bLength;
+         mod.barLength = bLength;
+      }
 
       return mod;
    }
@@ -492,7 +506,10 @@ public class Model
       double noteVal = 21;
       try
       {
-         BufferedReader reader = new BufferedReader(new FileReader("midi.txt"));
+         InputStream is = Model.class.getResourceAsStream("/etc/midi.txt");
+         if (is == null)
+            is = new FileInputStream("src/main/resources/etc/midi.txt");
+         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
          for (String line = reader.readLine(); line != null; line = reader.readLine())
          {
             noteMap.put(line.trim(), noteVal);
