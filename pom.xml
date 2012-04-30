@@ -41,6 +41,23 @@
 	  <target>1.6</target>
 	</configuration>
       </plugin>
+
+
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.2.1</version>
+        <configuration>
+     
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <manifest>
+              <mainClass>uk.ac.shef.dcs.oak.musicview.Controller</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
