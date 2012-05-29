@@ -1,2 +1,2 @@
-* Change the interface over to be slightly more dynamic
-* Normalise the time offsets
+* Fix the display to match the dooferino
+* Add in a bit of the axis on the line displays
