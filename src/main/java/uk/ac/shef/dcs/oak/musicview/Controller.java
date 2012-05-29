@@ -56,12 +56,14 @@ public class Controller
       JPanel infoPanel = new JPanel(new GridLayout(8, 1));
       infoPanel.add(new SummaryActionLine(this));
       infoPanel.add(new SummaryDriftLine(this));
-      infoPanel.add(new ActionLine(this, 44));
+
       infoPanel.add(new DriftLine(this, 44));
-      infoPanel.add(new ActionLine(this, 40));
       infoPanel.add(new DriftLine(this, 40));
-      infoPanel.add(new ActionLine(this, 36));
       infoPanel.add(new DriftLine(this, 36));
+
+      infoPanel.add(new ActionLine(this, 44));
+      infoPanel.add(new ActionLine(this, 40));
+      infoPanel.add(new ActionLine(this, 36));
 
       framer.add(panel, BorderLayout.SOUTH);
       framer.add(infoPanel, BorderLayout.CENTER);

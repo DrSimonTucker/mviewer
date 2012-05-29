@@ -169,12 +169,11 @@ public class Model
     *           the voice to get the velocity for
     * @return The maximum velocity as a double
     */
-   public final double getMaxVelocity(final double voice)
+   public final double getMaxVelocity()
    {
       double maxVel = 0;
       for (Event ev : getEvents())
-         if (ev.getPitch() == voice)
-            maxVel = Math.max(ev.getVelocity(), maxVel);
+         maxVel = Math.max(ev.getVelocity(), maxVel);
       return maxVel;
    }
 
@@ -185,12 +184,11 @@ public class Model
     *           the voice to get the velocity for
     * @return The minimum velocity as a double
     */
-   public final double getMinVelocity(final double voice)
+   public final double getMinVelocity()
    {
       double minVel = Double.MAX_VALUE;
       for (Event ev : getEvents())
-         if (ev.getPitch() == voice)
-            minVel = Math.min(ev.getVelocity(), minVel);
+         minVel = Math.min(ev.getVelocity(), minVel);
       return minVel;
    }
 
@@ -299,8 +297,7 @@ public class Model
    public final double getVelocityPerc(final Event ev)
    {
 
-      return (ev.getVelocity() - getMinVelocity(ev.getPitch()))
-            / (getMaxVelocity(ev.getPitch()) - getMinVelocity(ev.getPitch()));
+      return (ev.getVelocity() - getMinVelocity()) / (getMaxVelocity() - getMinVelocity());
    }
 
    /**
@@ -381,6 +378,8 @@ public class Model
       mod.upperBound = upper;
       mod.barLength = bLength;
 
+      System.out.println(mod.lowerBound + " and " + mod.upperBound);
+
       CSVReader reader = new CSVReader(new FileReader(f));
       String[] headers = reader.readNext();
       int onsetPos, scoreTime, velocity, voice, subj, tri;
@@ -402,7 +401,7 @@ public class Model
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
          {
             double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-            if (tScoreTime >= lower && tScoreTime <= upper)
+            if (tScoreTime >= lower && tScoreTime <= upper + 1)
             {
                Event ev = new Event(Double.parseDouble(nextLine[velocity]),
                      Double.parseDouble(nextLine[onsetPos]), Double.parseDouble(nextLine[voice]),
@@ -431,7 +430,7 @@ public class Model
                if (Integer.parseInt(nextLine[tri]) == trial)
                {
                   double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-                  if (tScoreTime >= lower && tScoreTime <= upper)
+                  if (tScoreTime >= lower && tScoreTime <= upper + 1)
                   {
                      Event ev = new Event(Double.parseDouble(nextLine[velocity]),
                            Double.parseDouble(nextLine[onsetPos]),

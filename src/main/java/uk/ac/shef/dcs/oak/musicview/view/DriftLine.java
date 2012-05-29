@@ -72,15 +72,14 @@ public class DriftLine extends JPanel implements ModelListener
          Map<Double, Double> drifts = new TreeMap<Double, Double>();
          double maxDrift = 0;
          for (Event ev : model.getEvents())
+         {
+            double drift = ev.getOnset() - model.getScoreTime(ev);
             if (isValidEvent(ev))
-            {
-
-               double drift = ev.getOnset() - model.getScoreTime(ev);
-               System.out.println(ev.getOnset() + " and " + model.getScoreTime(ev) + " but "
-                     + model.getOffset() + " thus " + drift);
                drifts.put(model.getScoreTime(ev) - model.getOffset(), drift);
-               maxDrift = Math.max(maxDrift, Math.abs(drift));
-            }
+
+            maxDrift = Math.max(maxDrift, Math.abs(drift));
+
+         }
 
          int currY = this.getHeight() / 2;
          int currX = -1;

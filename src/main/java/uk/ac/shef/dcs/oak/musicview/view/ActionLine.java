@@ -24,8 +24,10 @@ public class ActionLine extends JPanel implements ModelListener
    /** The left margin in pixels */
    public static final int LEFT_MARGIN = 20;
 
+   private static final int MARGIN = 10;
    /** Size of the circle */
    private static final int MAX_CIRCLE_SIZE = 40;
+
    /** Size of the circle */
    private static final int MIN_CIRCLE_SIZE = 10;
 
@@ -76,7 +78,7 @@ public class ActionLine extends JPanel implements ModelListener
       if (model != null)
       {
          // Do some housekeeping
-         double pixelPerSecond = (this.getWidth() - LEFT_MARGIN) / model.getTotalLength();
+         double pixelPerSecond = (this.getWidth() - LEFT_MARGIN * 2) / model.getTotalLength();
 
          // Plot the events
          for (Event ev : model.getEvents())
@@ -90,14 +92,15 @@ public class ActionLine extends JPanel implements ModelListener
                g.setColor(Color.RED);
                int pixCent = LEFT_MARGIN
                      + (int) ((ev.getOnset() - model.getOffset()) * pixelPerSecond);
-               int pixHeight = this.getHeight() / 2 - circleSize / 2;
-               g.drawOval(pixCent - circleSize / 2, pixHeight, circleSize, circleSize);
+               g.drawOval(pixCent - circleSize / 2, MARGIN, circleSize, this.getHeight() - 2
+                     * MARGIN);
 
                // Draw the Desired onset in black
                g.setColor(Color.black);
                int actPixCent = LEFT_MARGIN
                      + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
-               g.drawOval(actPixCent - circleSize / 2, pixHeight + 2, circleSize, circleSize);
+               g.drawOval(actPixCent - circleSize / 2, MARGIN, circleSize, this.getHeight() - 2
+                     * MARGIN);
             }
 
          // Draw the bar lines if needed
