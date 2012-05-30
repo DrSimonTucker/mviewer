@@ -406,6 +406,8 @@ public class Model
       subj = getHeader(headers, "Subject");
       tri = getHeader(headers, "Trial");
       int pitch = getHeader(headers, "Pitch");
+      int targetons = getHeader(headers, "TargetOnset");
+      int targetvel = getHeader(headers, "TargetVelocity");
 
       // Is the data pitched or voiced?
       boolean pitched = (pitch != -1);
@@ -417,15 +419,23 @@ public class Model
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
          {
             double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
+            double targetOnset = -1;
+            if (targetons >= 0)
+               targetOnset = Double.parseDouble(nextLine[targetons]);
+
+            double targetVel = -1;
+            if (targetvel >= 0)
+               targetOnset = Double.parseDouble(nextLine[targetvel]);
             if (tScoreTime >= lower && tScoreTime <= upper + 1)
             {
+
                Event ev = new Event(Double.parseDouble(nextLine[velocity]),
                      Double.parseDouble(nextLine[onsetPos]), Double.parseDouble(nextLine[voice]),
-                     Double.parseDouble(nextLine[scoreTime]));
+                     Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
                if (pitched)
                   ev = new Event(Double.parseDouble(nextLine[velocity]),
                         Double.parseDouble(nextLine[onsetPos]), convertPitch(nextLine[pitch]),
-                        Double.parseDouble(nextLine[scoreTime]));
+                        Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
 
                mod.events.add(ev);
 
@@ -441,17 +451,25 @@ public class Model
       else
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
          {
+
             if (Integer.parseInt(nextLine[subj]) == subject)
             {
                if (Integer.parseInt(nextLine[tri]) == trial)
                {
                   double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
+                  double targetOnset = -1;
+                  if (targetons >= 0)
+                     targetOnset = Double.parseDouble(nextLine[targetons]);
+
+                  double targetVel = -1;
+                  if (targetvel >= 0)
+                     targetOnset = Double.parseDouble(nextLine[targetvel]);
                   if (tScoreTime >= lower && tScoreTime <= upper + 1)
                   {
                      Event ev = new Event(Double.parseDouble(nextLine[velocity]),
                            Double.parseDouble(nextLine[onsetPos]),
                            Double.parseDouble(nextLine[voice]),
-                           Double.parseDouble(nextLine[scoreTime]));
+                           Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
                      mod.events.add(ev);
                   }
                   mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));

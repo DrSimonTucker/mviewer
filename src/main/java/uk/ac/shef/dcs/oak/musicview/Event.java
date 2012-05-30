@@ -20,6 +20,12 @@ public class Event
    /** The time in relation to the score that the event should occur */
    private final double scoreTime;
 
+   /** The proposed time of the event */
+   private final double targetOnset;
+
+   /** The proposed velocity of the event */
+   private final double targetVelocity;
+
    /**
     * Constructor
     * 
@@ -32,12 +38,15 @@ public class Event
     * @param score
     *           The score position of the note
     */
-   public Event(final double intense, final double onTime, final double voice, final double score)
+   public Event(final double intense, final double onTime, final double voice, final double score,
+         final double targetOns, final double targetVel)
    {
       intenstiy = intense;
       onsetTime = onTime;
       pitch = voice;
       scoreTime = score;
+      targetOnset = targetOns;
+      targetVelocity = targetVel;
    }
 
    /**
