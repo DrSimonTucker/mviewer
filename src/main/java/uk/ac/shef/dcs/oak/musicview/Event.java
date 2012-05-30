@@ -79,6 +79,16 @@ public class Event
       return pitch;
    }
 
+   public double getTargetOnset()
+   {
+      return targetOnset;
+   }
+
+   public double getTargetVelocity()
+   {
+      return targetVelocity;
+   }
+
    /**
     * Gets the velocity of the event
     * 

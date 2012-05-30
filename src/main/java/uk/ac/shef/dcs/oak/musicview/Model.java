@@ -34,6 +34,8 @@ public class Model
    /** The length of a bar in seconds */
    private double barLength = 1;
 
+   private final Map<Integer, Double> barStarts = new TreeMap<Integer, Double>();
+
    /** The bottom pitch */
    private double bottomPitch = 0.0;
 
@@ -128,9 +130,15 @@ public class Model
    public final Collection<Double> getBarTimes()
    {
       Collection<Double> barTimes = new LinkedList<Double>();
-      for (int i = (int) lowerBound; i <= upperBound; i++)
-         barTimes.add(i * barLength);
+
+      if (events.get(0).getTargetOnset() < 0)
+         for (int i = (int) lowerBound; i <= upperBound; i++)
+            barTimes.add(i * barLength);
+      else
+         for (int i = (int) lowerBound; i <= upperBound; i++)
+            barTimes.add(barStarts.get(i));
       return barTimes;
+
    }
 
    /**
