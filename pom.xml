@@ -8,6 +8,12 @@
   <name>mviewer</name>
   <url>http://maven.apache.org</url>
 
+  <scm>
+    <connection>scm:git:git@github.com:DrSimonTucker/mviewer.git</connection>
+    <url>scm:git:git@github.com:DrSimonTucker/mviewer.git</url>
+  </scm>
+
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
