@@ -1,6 +1,7 @@
 package uk.ac.shef.dcs.oak.musicview.view;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -41,6 +42,12 @@ public class DriftLine extends JPanel implements ModelListener
       chosenVoice = voice;
    }
 
+   @Override
+   public Dimension getPreferredSize()
+   {
+      return new Dimension(100, 100);
+   }
+
    /**
     * Method to determine if a given event is valid for the display
     * 
@@ -64,6 +71,8 @@ public class DriftLine extends JPanel implements ModelListener
    public final void paint(final Graphics g)
    {
       super.paint(g);
+
+      System.out.println("Painting: " + model);
 
       if (model != null)
       {
@@ -97,6 +106,7 @@ public class DriftLine extends JPanel implements ModelListener
 
          // Draw the baseline
          g.setColor(Color.lightGray);
+         System.out.println(this.getHeight() / 2 + " to " + getWidth());
          g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
       }
    }

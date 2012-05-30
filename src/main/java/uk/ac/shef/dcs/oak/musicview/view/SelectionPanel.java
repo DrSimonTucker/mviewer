@@ -193,27 +193,30 @@ public class SelectionPanel extends JPanel implements ModelListener
    @Override
    public final void newModelLoaded(final Model mod)
    {
-      loading = true;
-      subjectBoxModel.removeAllElements();
-      for (Integer subject : mod.getAllSubjects())
-         subjectBoxModel.addElement(subject);
-      subjectBoxModel.setSelectedItem(mod.getSelectedSubject());
+      if (mod != null && slider != null)
+      {
+         loading = true;
+         subjectBoxModel.removeAllElements();
+         for (Integer subject : mod.getAllSubjects())
+            subjectBoxModel.addElement(subject);
+         subjectBoxModel.setSelectedItem(mod.getSelectedSubject());
 
-      trialBoxModel.removeAllElements();
-      for (Integer trial : mod.getAllTrials())
-         trialBoxModel.addElement(trial);
-      trialBoxModel.setSelectedItem(mod.getSelectedTrial());
+         trialBoxModel.removeAllElements();
+         for (Integer trial : mod.getAllTrials())
+            trialBoxModel.addElement(trial);
+         trialBoxModel.setSelectedItem(mod.getSelectedTrial());
 
-      // Update the zoom slider
-      System.out.println("MAX = " + mod.getMaxBar());
-      slider.setMaximum((int) (mod.getMaxBar() - 2));
-      slider.setMinimum(1);
+         // Update the zoom slider
+         System.out.println("MAX = " + mod.getMaxBar());
+         slider.setMaximum((int) (mod.getMaxBar() - 2));
+         slider.setMinimum(1);
 
-      // get the average bar length and updated accordingly
-      NumberFormat nf = NumberFormat.getNumberInstance();
-      nf.setMaximumFractionDigits(3);
-      barLength.setText(nf.format(mod.getAverageBarLength()));
+         // get the average bar length and updated accordingly
+         NumberFormat nf = NumberFormat.getNumberInstance();
+         nf.setMaximumFractionDigits(3);
+         barLength.setText(nf.format(mod.getAverageBarLength()));
 
-      loading = false;
+         loading = false;
+      }
    }
 }

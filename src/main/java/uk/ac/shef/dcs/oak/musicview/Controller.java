@@ -1,17 +1,8 @@
 package uk.ac.shef.dcs.oak.musicview;
 
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
 import java.util.Collection;
 
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-import uk.ac.shef.dcs.oak.musicview.view.ActionLine;
-import uk.ac.shef.dcs.oak.musicview.view.DriftLine;
-import uk.ac.shef.dcs.oak.musicview.view.SelectionPanel;
-import uk.ac.shef.dcs.oak.musicview.view.SummaryActionLine;
-import uk.ac.shef.dcs.oak.musicview.view.SummaryDriftLine;
 
 /**
  * Controls the whole shebang
@@ -50,23 +41,8 @@ public class Controller
     */
    public final void run()
    {
-      JFrame framer = new JFrame();
-      SelectionPanel panel = new SelectionPanel(this);
+      ModelFrame framer = new ModelFrame(this);
 
-      JPanel infoPanel = new JPanel(new GridLayout(8, 1));
-      infoPanel.add(new SummaryActionLine(this));
-      infoPanel.add(new SummaryDriftLine(this));
-
-      infoPanel.add(new DriftLine(this, 44));
-      infoPanel.add(new DriftLine(this, 40));
-      infoPanel.add(new DriftLine(this, 36));
-
-      infoPanel.add(new ActionLine(this, 44));
-      infoPanel.add(new ActionLine(this, 40));
-      infoPanel.add(new ActionLine(this, 36));
-
-      framer.add(panel, BorderLayout.SOUTH);
-      framer.add(infoPanel, BorderLayout.CENTER);
       framer.setSize(500, 500);
       framer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       framer.setLocationRelativeTo(null);

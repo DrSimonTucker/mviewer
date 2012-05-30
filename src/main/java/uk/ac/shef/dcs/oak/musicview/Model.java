@@ -79,6 +79,7 @@ public class Model
    public final void addListener(final ModelListener listener)
    {
       listeners.add(listener);
+      listener.newModelLoaded(this);
    }
 
    /**
@@ -202,6 +203,11 @@ public class Model
       return upperBound - lowerBound;
    }
 
+   public final int getNumberOfVoices()
+   {
+      return getVoices().size();
+   }
+
    /**
     * Gets the time offset for the given zoom level
     * 
@@ -300,6 +306,14 @@ public class Model
       return (ev.getVelocity() - getMinVelocity()) / (getMaxVelocity() - getMinVelocity());
    }
 
+   public final Set<Double> getVoices()
+   {
+      Set<Double> voices = new TreeSet<Double>();
+      for (Event ev : events)
+         voices.add(ev.getPitch());
+      return voices;
+   }
+
    /**
     * Sets the length of a bar
     * 
@@ -317,7 +331,9 @@ public class Model
     */
    private void updateListeners()
    {
-      for (ModelListener listener : listeners)
+      // Prevents concurrent modifications elsewhere (hack)
+      List<ModelListener> tempListeners = new LinkedList<ModelListener>(listeners);
+      for (ModelListener listener : tempListeners)
          listener.newModelLoaded(this);
    }
 
