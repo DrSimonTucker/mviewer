@@ -140,6 +140,9 @@ public class Model
                barTimes.add(barStarts.get(i));
             else
                barTimes.add(0.0);
+
+      System.out.println("TIMES = " + barTimes);
+
       return barTimes;
 
    }
