@@ -21,10 +21,14 @@ public class ActionLine extends JPanel implements ModelListener
    /** Flag for painting the bar lines */
    private static final boolean BAR_LINES = true;
 
+   /** How much to offset the predicted and actual hit marks */
+   private static final int OFFSET = 5;
+
    /** The left margin in pixels */
    public static final int LEFT_MARGIN = 20;
 
    private static final int MARGIN = 10;
+
    /** Size of the circle */
    private static final int MAX_CIRCLE_SIZE = 40;
 
@@ -101,7 +105,7 @@ public class ActionLine extends JPanel implements ModelListener
                g.setColor(Color.lightGray);
                int actPixCent = LEFT_MARGIN
                      + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
-               int actYPixCent = this.getHeight() / 2 + velCircleSize / 2;
+               int actYPixCent = this.getHeight() / 2 + OFFSET;
                g.drawOval(actPixCent - velCircleSize / 2, actYPixCent - circleSize / 2,
                      velCircleSize, circleSize);
             }

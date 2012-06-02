@@ -131,12 +131,15 @@ public class Model
    {
       Collection<Double> barTimes = new LinkedList<Double>();
 
-      if (events.get(0).getTargetOnset() < 0)
+      if (events.size() > 0 && events.get(0).getTargetOnset() < 0)
          for (int i = (int) lowerBound; i <= upperBound; i++)
             barTimes.add(i * barLength);
       else
          for (int i = (int) lowerBound; i <= upperBound; i++)
-            barTimes.add(barStarts.get(i));
+            if (barStarts.containsKey(i))
+               barTimes.add(barStarts.get(i));
+            else
+               barTimes.add(0.0);
       return barTimes;
 
    }
@@ -402,8 +405,6 @@ public class Model
       mod.upperBound = upper;
       mod.barLength = bLength;
 
-      System.out.println(mod.lowerBound + " and " + mod.upperBound);
-
       CSVReader reader = new CSVReader(new FileReader(f));
       String[] headers = reader.readNext();
       int onsetPos, scoreTime, velocity, voice, subj, tri;
@@ -421,6 +422,7 @@ public class Model
       boolean pitched = (pitch != -1);
 
       Map<Integer, Double> barTimeMap = new TreeMap<Integer, Double>();
+      Map<Integer, List<Double>> targBarTimeMap = new TreeMap<Integer, List<Double>>();
 
       // Two types of data
       if (subj == -1)
@@ -434,6 +436,7 @@ public class Model
             double targetVel = -1;
             if (targetvel >= 0)
                targetOnset = Double.parseDouble(nextLine[targetvel]);
+
             if (tScoreTime >= lower && tScoreTime <= upper + 1)
             {
 
@@ -448,8 +451,15 @@ public class Model
                mod.events.add(ev);
 
                if (!nextLine[scoreTime].contains("."))
+               {
+                  // Fill up the targ Bar TimeMap
+                  if (!targBarTimeMap.containsKey((int) ev.getBar()))
+                     targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
+                  targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+
                   barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                         Double.parseDouble(nextLine[onsetPos]));
+               }
             }
             System.out.println(nextLine[scoreTime]);
             mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
@@ -471,10 +481,11 @@ public class Model
 
                   double targetVel = -1;
                   if (targetvel >= 0)
-                     targetOnset = Double.parseDouble(nextLine[targetvel]);
+                     targetVel = Double.parseDouble(nextLine[targetvel]);
+                  Event ev = null;
                   if (tScoreTime >= lower && tScoreTime <= upper + 1)
                   {
-                     Event ev = new Event(Double.parseDouble(nextLine[velocity]),
+                     ev = new Event(Double.parseDouble(nextLine[velocity]),
                            Double.parseDouble(nextLine[onsetPos]),
                            Double.parseDouble(nextLine[voice]),
                            Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
@@ -485,8 +496,17 @@ public class Model
                   mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
 
                   if (!nextLine[scoreTime].contains("."))
+                  {
+                     // Fill up the targ Bar TimeMap
+                     if (ev != null)
+                     {
+                        if (!targBarTimeMap.containsKey((int) ev.getBar()))
+                           targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
+                        targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+                     }
                      barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                            Double.parseDouble(nextLine[onsetPos]));
+                  }
                }
 
                mod.trials.add(Integer.parseInt(nextLine[tri]));
@@ -498,6 +518,15 @@ public class Model
       // Offset all the times to start from zero
       for (Event ev : mod.events)
          ev.offsetOnsetTime(mod.minTime);
+
+      // Set the target bar times
+      for (Integer key : targBarTimeMap.keySet())
+      {
+         Double sum = 0.0;
+         for (Double val : targBarTimeMap.get(key))
+            sum += val;
+         mod.barStarts.put(key, sum / targBarTimeMap.get(key).size());
+      }
 
       // Set the average bar time
       if (bLength < 0)

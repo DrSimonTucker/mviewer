@@ -208,13 +208,19 @@ public class SelectionPanel extends JPanel implements ModelListener
 
          // Update the zoom slider
          System.out.println("MAX = " + mod.getMaxBar());
-         slider.setMaximum((int) (mod.getMaxBar() - 2));
+         slider.setMaximum((int) (mod.getMaxBar()));
          slider.setMinimum(1);
 
          // get the average bar length and updated accordingly
          NumberFormat nf = NumberFormat.getNumberInstance();
          nf.setMaximumFractionDigits(3);
          barLength.setText(nf.format(mod.getAverageBarLength()));
+
+         // Blank out the bar length if we have timing information
+         if (mod.getEvents().size() > 0 && mod.getEvents().iterator().next().getTargetOnset() > 0)
+            barLength.setEnabled(false);
+         else
+            barLength.setEnabled(true);
 
          loading = false;
       }

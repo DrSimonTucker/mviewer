@@ -72,8 +72,6 @@ public class DriftLine extends JPanel implements ModelListener
    {
       super.paint(g);
 
-      System.out.println("Painting: " + model);
-
       if (model != null)
       {
          double pixelsPerSecond = this.getWidth() / model.getTotalLength();
@@ -106,7 +104,6 @@ public class DriftLine extends JPanel implements ModelListener
 
          // Draw the baseline
          g.setColor(Color.lightGray);
-         System.out.println(this.getHeight() / 2 + " to " + getWidth());
          g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
       }
    }
