@@ -105,6 +105,8 @@ public class ActionLine extends JPanel implements ModelListener
                g.setColor(Color.lightGray);
                int actPixCent = LEFT_MARGIN
                      + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
+               System.out.println("ACT = " + actPixCent + " from " + model.getScoreTime(ev)
+                     + " and " + model.getOffset());
                int actYPixCent = this.getHeight() / 2 + OFFSET;
                g.drawOval(actPixCent - velCircleSize / 2, actYPixCent - circleSize / 2,
                      velCircleSize, circleSize);

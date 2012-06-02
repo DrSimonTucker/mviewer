@@ -141,8 +141,6 @@ public class Model
             else
                barTimes.add(0.0);
 
-      System.out.println("TIMES = " + barTimes);
-
       return barTimes;
 
    }
@@ -273,7 +271,13 @@ public class Model
     */
    public final double getScoreTime(final Event ev)
    {
-      return ev.getBar() * barLength - (avgBarLength * minBar);
+      // Use the fixed time if we have it
+      if (ev.getTargetOnset() > 0)
+      {
+         return ev.getTargetOnset();
+      }
+      else
+         return ev.getBar() * barLength - (avgBarLength * minBar);
    }
 
    /**
