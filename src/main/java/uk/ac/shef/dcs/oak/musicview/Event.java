@@ -21,7 +21,7 @@ public class Event
    private final double scoreTime;
 
    /** The proposed time of the event */
-   private final double targetOnset;
+   private double targetOnset;
 
    /** The proposed velocity of the event */
    private final double targetVelocity;
@@ -108,5 +108,6 @@ public class Event
    public final void offsetOnsetTime(final double offsetValue)
    {
       onsetTime = onsetTime - offsetValue;
+      targetOnset = targetOnset - offsetValue;
    }
 }

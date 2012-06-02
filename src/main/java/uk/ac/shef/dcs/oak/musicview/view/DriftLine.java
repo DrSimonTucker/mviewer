@@ -84,8 +84,10 @@ public class DriftLine extends JPanel implements ModelListener
             if (isValidEvent(ev))
                drifts.put(model.getScoreTime(ev) - model.getOffset(), drift);
 
-            maxDrift = Math.max(maxDrift, Math.abs(drift));
+            System.out.println("Get DRIFT = " + drift + " given " + ev.getOnset() + " => "
+                  + model.getScoreTime(ev));
 
+            maxDrift = Math.max(maxDrift, Math.abs(drift));
          }
 
          int currY = this.getHeight() / 2;
