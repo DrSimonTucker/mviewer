@@ -111,7 +111,7 @@ public class DriftLine extends JPanel implements ModelListener
          g.setColor(Color.red);
          NumberFormat nf = NumberFormat.getInstance();
          nf.setMaximumFractionDigits(3);
-         g.drawString(nf.format(maxDrift), 0, 10);
+         g.drawString(nf.format(maxDrift) + "s", 0, 10);
       }
    }
 }
