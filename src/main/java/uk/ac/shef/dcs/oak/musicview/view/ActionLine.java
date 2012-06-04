@@ -22,7 +22,7 @@ public class ActionLine extends JPanel implements ModelListener
    private static final boolean BAR_LINES = true;
 
    /** How much to offset the predicted and actual hit marks */
-   private static final int OFFSET = 5;
+   private static final int OFFSET = 0;
 
    /** The left margin in pixels */
    public static final int LEFT_MARGIN = 20;
@@ -31,6 +31,8 @@ public class ActionLine extends JPanel implements ModelListener
 
    /** Size of the circle */
    private static final int MAX_CIRCLE_SIZE = 40;
+
+   private static final int GIVEN_CIRCLE_SIZE = 8;
 
    /** Size of the circle */
    private static final int MIN_CIRCLE_SIZE = 10;
@@ -89,17 +91,9 @@ public class ActionLine extends JPanel implements ModelListener
             if (isValidEvent(ev))
             {
                double percVelocity = model.getVelocityPerc(ev);
-               int velCircleSize = MAX_CIRCLE_SIZE;
+               int velCircleSize = GIVEN_CIRCLE_SIZE;
                int circleSize = (int) (percVelocity * (MAX_CIRCLE_SIZE - MIN_CIRCLE_SIZE))
                      + MIN_CIRCLE_SIZE;
-
-               // Draw a circle at the relevant point and the relevant pitch
-               g.setColor(Color.RED);
-               int xPixCent = LEFT_MARGIN
-                     + (int) ((ev.getOnset() - model.getOffset()) * pixelPerSecond);
-               int yPixCent = this.getHeight() / 2;
-               g.drawOval(xPixCent - velCircleSize / 2, yPixCent - circleSize / 2, velCircleSize,
-                     circleSize);
 
                // Draw the Desired onset in black
                g.setColor(Color.lightGray);
@@ -110,6 +104,15 @@ public class ActionLine extends JPanel implements ModelListener
                int actYPixCent = this.getHeight() / 2 + OFFSET;
                g.drawOval(actPixCent - velCircleSize / 2, actYPixCent - circleSize / 2,
                      velCircleSize, circleSize);
+
+               // Draw a circle at the relevant point and the relevant pitch
+               g.setColor(Color.RED);
+               int xPixCent = LEFT_MARGIN
+                     + (int) ((ev.getOnset() - model.getOffset()) * pixelPerSecond);
+               int yPixCent = this.getHeight() / 2;
+               g.drawOval(xPixCent - velCircleSize / 2, yPixCent - circleSize / 2, velCircleSize,
+                     circleSize);
+
             }
 
          // Draw the bar lines if needed
