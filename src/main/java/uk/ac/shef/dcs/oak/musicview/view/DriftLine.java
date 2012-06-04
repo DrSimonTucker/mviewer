@@ -3,6 +3,7 @@ package uk.ac.shef.dcs.oak.musicview.view;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.text.NumberFormat;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -84,14 +85,12 @@ public class DriftLine extends JPanel implements ModelListener
             if (isValidEvent(ev))
                drifts.put(model.getScoreTime(ev) - model.getOffset(), drift);
 
-            System.out.println("Get DRIFT = " + drift + " given " + ev.getOnset() + " => "
-                  + model.getScoreTime(ev));
-
             maxDrift = Math.max(maxDrift, Math.abs(drift));
          }
 
          int currY = this.getHeight() / 2;
          int currX = -1;
+
          // Paint the line
          for (Entry<Double, Double> entry : drifts.entrySet())
          {
@@ -107,6 +106,12 @@ public class DriftLine extends JPanel implements ModelListener
          // Draw the baseline
          g.setColor(Color.lightGray);
          g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
+
+         // Add the max drift in seconds to the top left of the display
+         g.setColor(Color.red);
+         NumberFormat nf = NumberFormat.getInstance();
+         nf.setMaximumFractionDigits(3);
+         g.drawString(nf.format(maxDrift), 0, 10);
       }
    }
 }
