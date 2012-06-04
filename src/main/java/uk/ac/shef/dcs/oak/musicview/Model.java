@@ -132,15 +132,18 @@ public class Model
       Collection<Double> barTimes = new LinkedList<Double>();
 
       if (events.size() > 0 && events.get(0).getTargetOnset() < 0)
-         for (int i = (int) lowerBound; i <= upperBound; i++)
-            barTimes.add(i * barLength);
-      else
+         // {
+         // for (int i = (int) lowerBound; i <= upperBound; i++)
+         // barTimes.add(i * barLength);
+         // }
+         // else
          for (int i = (int) lowerBound; i <= upperBound; i++)
             if (barStarts.containsKey(i))
                barTimes.add(barStarts.get(i));
             else
                barTimes.add(0.0);
 
+      System.out.println(barTimes);
       return barTimes;
 
    }
@@ -462,13 +465,20 @@ public class Model
                   // Fill up the targ Bar TimeMap
                   if (!targBarTimeMap.containsKey((int) ev.getBar()))
                      targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
-                  targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+
+                  // If we don't have the target time, use the given time
+                  // to compute the bar times
+                  if (targetOnset > 0)
+                     targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+                  else
+                     targBarTimeMap.get((int) ev.getBar()).add(
+                           Double.parseDouble(nextLine[onsetPos]));
 
                   barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                         Double.parseDouble(nextLine[onsetPos]));
                }
             }
-            System.out.println(nextLine[scoreTime]);
+
             mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
             mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
             mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
@@ -509,7 +519,14 @@ public class Model
                      {
                         if (!targBarTimeMap.containsKey((int) ev.getBar()))
                            targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
-                        targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+
+                        // If we don't have the target time, use the given time
+                        // to compute the bar times
+                        if (targetOnset > 0)
+                           targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+                        else
+                           targBarTimeMap.get((int) ev.getBar()).add(
+                                 Double.parseDouble(nextLine[onsetPos]));
                      }
                      barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                            Double.parseDouble(nextLine[onsetPos]));

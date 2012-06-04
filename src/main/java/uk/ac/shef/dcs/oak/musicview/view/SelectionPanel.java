@@ -207,7 +207,6 @@ public class SelectionPanel extends JPanel implements ModelListener
          trialBoxModel.setSelectedItem(mod.getSelectedTrial());
 
          // Update the zoom slider
-         System.out.println("MAX = " + mod.getMaxBar());
          slider.setMaximum((int) (mod.getMaxBar()));
          slider.setMinimum(1);
 
