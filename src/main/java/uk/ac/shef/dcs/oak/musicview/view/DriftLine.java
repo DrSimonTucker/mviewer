@@ -102,7 +102,6 @@ public class DriftLine extends JPanel implements ModelListener
          {
             int pixY = this.getHeight() / 2
                   - (int) ((entry.getValue() / maxDrift) * this.getHeight() / 2);
-            System.out.println(pixY);
             int pixX = ActionLine.LEFT_MARGIN + (int) (pixelsPerSecond * entry.getKey());
             if (currX > 0)
                g.drawLine(currX, currY, pixX, currY);

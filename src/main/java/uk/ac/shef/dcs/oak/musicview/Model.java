@@ -282,12 +282,8 @@ public class Model
             return getBarTimes().get((int) (ev.getBar() - lowerBound));
 
          int bar = (int) ev.getBar();
-         // System.out.println(getBarTimes() + " => " + bar + " and " +
-         // lowerBound + " given "
-         // + ev.getBar());
          double barStartTime = getBarTimes().get(bar - (int) lowerBound);
          double barEndTime = getBarTimes().get(1 + bar - (int) lowerBound);
-         // System.out.println(barStartTime + " to " + barEndTime);
          return barStartTime + (ev.getBar() - bar) * (barEndTime - barStartTime);
       }
    }
@@ -448,11 +444,11 @@ public class Model
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
          {
             double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-            double targetOnset = -1;
+            double targetOnset = -100;
             if (targetons >= 0)
                targetOnset = Double.parseDouble(nextLine[targetons]);
 
-            double targetVel = -1;
+            double targetVel = -100;
             if (targetvel >= 0)
                targetOnset = Double.parseDouble(nextLine[targetvel]);
 
@@ -501,11 +497,11 @@ public class Model
                if (Integer.parseInt(nextLine[tri]) == trial)
                {
                   double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-                  double targetOnset = -1;
+                  double targetOnset = -100;
                   if (targetons >= 0)
                      targetOnset = Double.parseDouble(nextLine[targetons]);
 
-                  double targetVel = -1;
+                  double targetVel = -100;
                   if (targetvel >= 0)
                      targetVel = Double.parseDouble(nextLine[targetvel]);
                   Event ev = null;
@@ -628,7 +624,8 @@ public class Model
 
    public static void main(String[] args) throws IOException
    {
-      Model mod = Model.generateModel(new File("/Users/sat/data/renee/n8R.txt"), 1, 1, 0, 5, 2.5);
+      Model mod = Model.generateModel(new File("/Users/sat/data/renee/nBR-4mel-tenor.txt"), 1, 1,
+            0, 5, 2.5);
 
       for (Event ev : mod.getEvents())
          // System.out.println(ev + " and " + ev.getBar());
