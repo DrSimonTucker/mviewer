@@ -131,18 +131,17 @@ public class Model
    {
       List<Double> barTimes = new LinkedList<Double>();
 
-      if (events.size() > 0 && events.get(0).getTargetOnset() < 0)
-         // {
-         // for (int i = (int) lowerBound; i <= upperBound; i++)
-         // barTimes.add(i * barLength);
-         // }
-         // else
-         for (int i = (int) lowerBound; i <= upperBound; i++)
-            if (barStarts.containsKey(i))
-               barTimes.add(barStarts.get(i));
-            else
-               barTimes.add(0.0);
-
+      // if (events.size() > 0 && events.get(0).getTargetOnset() < 0)
+      // {
+      // for (int i = (int) lowerBound; i <= upperBound; i++)
+      // barTimes.add(i * barLength);
+      // }
+      // else
+      for (int i = (int) lowerBound; i <= upperBound; i++)
+         if (barStarts.containsKey(i))
+            barTimes.add(barStarts.get(i));
+         else
+            barTimes.add(0.0);
       return barTimes;
 
    }
@@ -175,6 +174,11 @@ public class Model
    public final double getMaxBar()
    {
       return maxBar;
+   }
+
+   public final double getMinBar()
+   {
+      return minBar;
    }
 
    /**
@@ -416,7 +420,7 @@ public class Model
       Model mod = new Model();
       mod.selectedSubject = subject;
       mod.selectedTrial = trial;
-      mod.lowerBound = lower - 1;
+      mod.lowerBound = lower;
       mod.upperBound = upper;
       mod.barLength = bLength;
 
@@ -487,6 +491,7 @@ public class Model
             mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
             mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
             mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
+
          }
       else
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
@@ -545,17 +550,34 @@ public class Model
          }
 
       // Offset all the times to start from zero
-      for (Event ev : mod.events)
-         ev.offsetOnsetTime(mod.minTime);
+      // for (Event ev : mod.events)
+      // ev.offsetOnsetTime(mod.minTime);
 
       // Set the target bar times
       for (Integer key : targBarTimeMap.keySet())
       {
+         System.out.println("Putting: " + key);
          Double sum = 0.0;
          for (Double val : targBarTimeMap.get(key))
             sum += val;
          mod.barStarts.put(key, sum / targBarTimeMap.get(key).size());
       }
+
+      // Adjust for upbeats
+      if (mod.minBar != (int) mod.minBar)
+      {
+         System.out.println("UPBEAT");
+         System.out.println(mod.minBar + " and " + mod.barStarts.get((int) Math.ceil(mod.minBar)));
+         System.out.println(mod.barStarts);
+
+         double offsetTime = mod.barStarts.get((int) Math.ceil(mod.minBar)) - mod.minTime;
+         double value = offsetTime / ((int) Math.ceil(mod.minBar) - mod.minBar);
+         double time = mod.minTime - mod.minBar * value;
+
+         mod.barStarts.put((int) Math.floor(mod.minBar), time);
+      }
+      else
+         System.out.println("MIN BAR = " + mod.minBar);
 
       // Set the average bar time
       if (bLength < 0)
@@ -625,10 +647,13 @@ public class Model
    public static void main(String[] args) throws IOException
    {
       Model mod = Model.generateModel(new File("/Users/sat/data/renee/nBR-4mel-tenor.txt"), 1, 1,
-            0, 5, 2.5);
+            0, 3, 2.5);
 
       for (Event ev : mod.getEvents())
          // System.out.println(ev + " and " + ev.getBar());
          System.out.println(ev + " and " + ev.getOnset() + " / " + mod.getScoreTime(ev));
+
+      System.out.println("BAR TIMES = " + mod.getBarTimes());
+      System.out.println("LOW = " + mod.getMinBar());
    }
 }

@@ -84,16 +84,12 @@ public class BarDriftLine extends JPanel implements ModelListener
 
          // Draw the bar lines if needed
          g.setColor(Color.black);
-         System.out.println(barLengths);
          for (int i = 0; i < barTimes.size() - 1; i++)
          {
             double perc = 1 - ((barTimes.get(i + 1) - barTimes.get(i)) - minBarTime)
                   / (maxBarTime - minBarTime);
-            System.out.println(maxBarTime + " " + (barTimes.get(i + 1) - barTimes.get(i)) + " "
-                  + minBarTime + " => " + perc);
 
             int height = (int) (perc * ((this.getHeight() - MARGIN) / 2)) + this.getHeight() / 2;
-            System.out.println(perc + " " + height + " given " + (this.getHeight() / 2));
 
             int pixPosLeft = LEFT_MARGIN
                   + (int) ((barTimes.get(i) - model.getOffset()) * pixelPerSecond);

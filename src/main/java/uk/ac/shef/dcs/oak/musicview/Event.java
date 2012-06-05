@@ -107,6 +107,8 @@ public class Event
     */
    public final void offsetOnsetTime(final double offsetValue)
    {
+      System.out.println("Offsetting");
+      System.exit(1);
       onsetTime = onsetTime - offsetValue;
       targetOnset = targetOnset - offsetValue;
    }
