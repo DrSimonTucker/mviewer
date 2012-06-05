@@ -1,13 +1,14 @@
 package uk.ac.shef.dcs.oak.musicview.view;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
+import java.text.NumberFormat;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import uk.ac.shef.dcs.oak.musicview.Controller;
 import uk.ac.shef.dcs.oak.musicview.Event;
@@ -42,12 +43,6 @@ public class DriftLine extends JPanel implements ModelListener
       chosenVoice = voice;
    }
 
-   @Override
-   public Dimension getPreferredSize()
-   {
-      return new Dimension(100, 100);
-   }
-
    /**
     * Method to determine if a given event is valid for the display
     * 
@@ -64,13 +59,25 @@ public class DriftLine extends JPanel implements ModelListener
    public final void newModelLoaded(final Model mod)
    {
       this.model = mod;
-      repaint();
+      SwingUtilities.invokeLater(new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            repaint();
+         }
+      });
    }
 
    @Override
    public final void paint(final Graphics g)
    {
       super.paint(g);
+
+      // Draw the baseline
+      g.setColor(Color.lightGray);
+      g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
+      g.setColor(Color.black);
 
       if (model != null)
       {
@@ -84,14 +91,12 @@ public class DriftLine extends JPanel implements ModelListener
             if (isValidEvent(ev))
                drifts.put(model.getScoreTime(ev) - model.getOffset(), drift);
 
-            System.out.println("Get DRIFT = " + drift + " given " + ev.getOnset() + " => "
-                  + model.getScoreTime(ev));
-
             maxDrift = Math.max(maxDrift, Math.abs(drift));
          }
 
          int currY = this.getHeight() / 2;
          int currX = -1;
+
          // Paint the line
          for (Entry<Double, Double> entry : drifts.entrySet())
          {
@@ -99,14 +104,16 @@ public class DriftLine extends JPanel implements ModelListener
                   - (int) ((entry.getValue() / maxDrift) * this.getHeight() / 2);
             int pixX = ActionLine.LEFT_MARGIN + (int) (pixelsPerSecond * entry.getKey());
             if (currX > 0)
-               g.drawLine(currX, currY, pixX, pixY);
+               g.drawLine(currX, currY, pixX, currY);
             currX = pixX;
             currY = pixY;
          }
 
-         // Draw the baseline
-         g.setColor(Color.lightGray);
-         g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
+         // Add the max drift in seconds to the top left of the display
+         g.setColor(Color.red);
+         NumberFormat nf = NumberFormat.getInstance();
+         nf.setMaximumFractionDigits(3);
+         g.drawString(nf.format(maxDrift) + "s", 0, 10);
       }
    }
 }

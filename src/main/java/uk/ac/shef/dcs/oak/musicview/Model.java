@@ -127,14 +127,16 @@ public class Model
     * 
     * @return A Collection of times for each bar
     */
-   public final Collection<Double> getBarTimes()
+   public final List<Double> getBarTimes()
    {
-      Collection<Double> barTimes = new LinkedList<Double>();
+      List<Double> barTimes = new LinkedList<Double>();
 
       if (events.size() > 0 && events.get(0).getTargetOnset() < 0)
-         for (int i = (int) lowerBound; i <= upperBound; i++)
-            barTimes.add(i * barLength);
-      else
+         // {
+         // for (int i = (int) lowerBound; i <= upperBound; i++)
+         // barTimes.add(i * barLength);
+         // }
+         // else
          for (int i = (int) lowerBound; i <= upperBound; i++)
             if (barStarts.containsKey(i))
                barTimes.add(barStarts.get(i));
@@ -272,12 +274,18 @@ public class Model
    public final double getScoreTime(final Event ev)
    {
       // Use the fixed time if we have it
-      if (ev.getTargetOnset() > 0)
-      {
+      if (ev.getTargetOnset() > -100)
          return ev.getTargetOnset();
-      }
       else
-         return ev.getBar() * barLength - (avgBarLength * minBar);
+      {
+         if (ev.getBar() == (int) ev.getBar())
+            return getBarTimes().get((int) (ev.getBar() - lowerBound));
+
+         int bar = (int) ev.getBar();
+         double barStartTime = getBarTimes().get(bar - (int) lowerBound);
+         double barEndTime = getBarTimes().get(1 + bar - (int) lowerBound);
+         return barStartTime + (ev.getBar() - bar) * (barEndTime - barStartTime);
+      }
    }
 
    /**
@@ -436,15 +444,15 @@ public class Model
          for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
          {
             double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-            double targetOnset = -1;
+            double targetOnset = -100;
             if (targetons >= 0)
                targetOnset = Double.parseDouble(nextLine[targetons]);
 
-            double targetVel = -1;
+            double targetVel = -100;
             if (targetvel >= 0)
                targetOnset = Double.parseDouble(nextLine[targetvel]);
 
-            if (tScoreTime >= lower && tScoreTime <= upper + 1)
+            if (tScoreTime >= lower && tScoreTime <= upper)
             {
 
                Event ev = new Event(Double.parseDouble(nextLine[velocity]),
@@ -462,13 +470,20 @@ public class Model
                   // Fill up the targ Bar TimeMap
                   if (!targBarTimeMap.containsKey((int) ev.getBar()))
                      targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
-                  targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+
+                  // If we don't have the target time, use the given time
+                  // to compute the bar times
+                  if (targetOnset > 0)
+                     targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+                  else
+                     targBarTimeMap.get((int) ev.getBar()).add(
+                           Double.parseDouble(nextLine[onsetPos]));
 
                   barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                         Double.parseDouble(nextLine[onsetPos]));
                }
             }
-            System.out.println(nextLine[scoreTime]);
+
             mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
             mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
             mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
@@ -482,15 +497,15 @@ public class Model
                if (Integer.parseInt(nextLine[tri]) == trial)
                {
                   double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-                  double targetOnset = -1;
+                  double targetOnset = -100;
                   if (targetons >= 0)
                      targetOnset = Double.parseDouble(nextLine[targetons]);
 
-                  double targetVel = -1;
+                  double targetVel = -100;
                   if (targetvel >= 0)
                      targetVel = Double.parseDouble(nextLine[targetvel]);
                   Event ev = null;
-                  if (tScoreTime >= lower && tScoreTime <= upper + 1)
+                  if (tScoreTime >= lower && tScoreTime <= upper)
                   {
                      ev = new Event(Double.parseDouble(nextLine[velocity]),
                            Double.parseDouble(nextLine[onsetPos]),
@@ -509,7 +524,14 @@ public class Model
                      {
                         if (!targBarTimeMap.containsKey((int) ev.getBar()))
                            targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
-                        targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+
+                        // If we don't have the target time, use the given time
+                        // to compute the bar times
+                        if (targetOnset > 0)
+                           targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+                        else
+                           targBarTimeMap.get((int) ev.getBar()).add(
+                                 Double.parseDouble(nextLine[onsetPos]));
                      }
                      barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                            Double.parseDouble(nextLine[onsetPos]));
@@ -598,5 +620,15 @@ public class Model
       {
          e.printStackTrace();
       }
+   }
+
+   public static void main(String[] args) throws IOException
+   {
+      Model mod = Model.generateModel(new File("/Users/sat/data/renee/nBR-4mel-tenor.txt"), 1, 1,
+            0, 5, 2.5);
+
+      for (Event ev : mod.getEvents())
+         // System.out.println(ev + " and " + ev.getBar());
+         System.out.println(ev + " and " + ev.getOnset() + " / " + mod.getScoreTime(ev));
    }
 }

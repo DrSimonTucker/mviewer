@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import uk.ac.shef.dcs.oak.musicview.Controller;
 import uk.ac.shef.dcs.oak.musicview.Event;
@@ -22,7 +23,7 @@ public class ActionLine extends JPanel implements ModelListener
    private static final boolean BAR_LINES = true;
 
    /** How much to offset the predicted and actual hit marks */
-   private static final int OFFSET = 5;
+   private static final int OFFSET = 0;
 
    /** The left margin in pixels */
    public static final int LEFT_MARGIN = 20;
@@ -31,6 +32,8 @@ public class ActionLine extends JPanel implements ModelListener
 
    /** Size of the circle */
    private static final int MAX_CIRCLE_SIZE = 40;
+
+   private static final int GIVEN_CIRCLE_SIZE = 8;
 
    /** Size of the circle */
    private static final int MIN_CIRCLE_SIZE = 10;
@@ -70,13 +73,29 @@ public class ActionLine extends JPanel implements ModelListener
    @Override
    public final void newModelLoaded(final Model mod)
    {
+      // System.out.println("Action loaded new model: " + this.getSize());
       model = mod;
-      repaint();
+      if (this.getSize().getHeight() > 0)
+      {
+         SwingUtilities.invokeLater(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               repaint();
+            }
+         });
+
+      }
    }
+
+   double id = Math.random();
 
    @Override
    public final void paint(final Graphics g)
    {
+      // System.out.println("repainting " + this.getSize());
+
       super.paint(g);
 
       if (model != null)
@@ -89,9 +108,17 @@ public class ActionLine extends JPanel implements ModelListener
             if (isValidEvent(ev))
             {
                double percVelocity = model.getVelocityPerc(ev);
-               int velCircleSize = MAX_CIRCLE_SIZE;
+               int velCircleSize = GIVEN_CIRCLE_SIZE;
                int circleSize = (int) (percVelocity * (MAX_CIRCLE_SIZE - MIN_CIRCLE_SIZE))
                      + MIN_CIRCLE_SIZE;
+
+               // Draw the Desired onset in black
+               g.setColor(Color.lightGray);
+               int actPixCent = LEFT_MARGIN
+                     + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
+               int actYPixCent = this.getHeight() / 2 + OFFSET;
+               g.drawOval(actPixCent - velCircleSize / 2, actYPixCent - circleSize / 2,
+                     velCircleSize, circleSize);
 
                // Draw a circle at the relevant point and the relevant pitch
                g.setColor(Color.RED);
@@ -101,15 +128,6 @@ public class ActionLine extends JPanel implements ModelListener
                g.drawOval(xPixCent - velCircleSize / 2, yPixCent - circleSize / 2, velCircleSize,
                      circleSize);
 
-               // Draw the Desired onset in black
-               g.setColor(Color.lightGray);
-               int actPixCent = LEFT_MARGIN
-                     + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
-               System.out.println("ACT = " + actPixCent + " from " + model.getScoreTime(ev)
-                     + " and " + model.getOffset());
-               int actYPixCent = this.getHeight() / 2 + OFFSET;
-               g.drawOval(actPixCent - velCircleSize / 2, actYPixCent - circleSize / 2,
-                     velCircleSize, circleSize);
             }
 
          // Draw the bar lines if needed

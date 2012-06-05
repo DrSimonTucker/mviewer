@@ -3,6 +3,7 @@ package uk.ac.shef.dcs.oak.musicview;
 import java.util.Collection;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 /**
  * Controls the whole shebang
@@ -41,13 +42,24 @@ public class Controller
     */
    public final void run()
    {
-      ModelFrame framer = new ModelFrame(this);
+      final Controller mCont = this;
+      SwingUtilities.invokeLater(new Runnable()
+      {
 
-      framer.setSize(500, 500);
-      framer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      framer.setLocationRelativeTo(null);
+         @Override
+         public void run()
+         {
+            ModelFrame framer = new ModelFrame(mCont);
 
-      framer.setVisible(true);
+            framer.setSize(500, 500);
+            framer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            framer.setLocationRelativeTo(null);
+
+            framer.setVisible(true);
+         }
+
+      });
+
    }
 
    /**
