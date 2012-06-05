@@ -646,14 +646,13 @@ public class Model
 
    public static void main(String[] args) throws IOException
    {
-      Model mod = Model.generateModel(new File("/Users/sat/data/renee/nBR-4mel-tenor.txt"), 1, 1,
-            0, 3, 2.5);
+      Model mod = Model.generateModel(new File("/Users/sat/data/renee/n8R.txt"), 1, 1, 1, 17, 2.5);
 
       for (Event ev : mod.getEvents())
          // System.out.println(ev + " and " + ev.getBar());
          System.out.println(ev + " and " + ev.getOnset() + " / " + mod.getScoreTime(ev));
 
       System.out.println("BAR TIMES = " + mod.getBarTimes());
-      System.out.println("LOW = " + mod.getMinBar());
+      System.out.println("LOW = " + mod.getMaxBar());
    }
 }

@@ -2,6 +2,7 @@ package uk.ac.shef.dcs.oak.musicview.view;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.text.NumberFormat;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -82,6 +83,10 @@ public class BarDriftLine extends JPanel implements ModelListener
             minBarTime = Math.min(minBarTime, Math.abs(barTimes.get(i + 1) - barTimes.get(i)));
          }
 
+         // Draw in the gray middle line
+         g.setColor(Color.lightGray);
+         g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
+
          // Draw the bar lines if needed
          g.setColor(Color.black);
          for (int i = 0; i < barTimes.size() - 1; i++)
@@ -97,6 +102,12 @@ public class BarDriftLine extends JPanel implements ModelListener
                   + (int) ((barTimes.get(i + 1) - model.getOffset()) * pixelPerSecond);
             g.drawLine(pixPosLeft, height, pixPosRight, height);
          }
+
+         // Add the max drift in seconds to the top left of the display
+         g.setColor(Color.red);
+         NumberFormat nf = NumberFormat.getInstance();
+         nf.setMaximumFractionDigits(3);
+         g.drawString(nf.format((maxBarTime - minBarTime)) + "s", 0, 10);
 
       }
    }
