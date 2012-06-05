@@ -3,7 +3,7 @@
   <groupId>uk.ac.shef.dcs.oak.musicview</groupId>
   <artifactId>mviewer</artifactId>
   <packaging>jar</packaging>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.5-SNAPSHOT</version>
   <name>mviewer</name>
   <url>http://maven.apache.org</url>
 
