@@ -14,10 +14,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import uk.ac.shef.dcs.oak.musicview.view.ActionLine;
-import uk.ac.shef.dcs.oak.musicview.view.DriftLine;
+import uk.ac.shef.dcs.oak.musicview.view.BarDriftLine;
 import uk.ac.shef.dcs.oak.musicview.view.SelectionPanel;
 import uk.ac.shef.dcs.oak.musicview.view.SummaryActionLine;
-import uk.ac.shef.dcs.oak.musicview.view.SummaryDriftLine;
 
 public class ModelFrame extends JFrame implements ModelListener
 {
@@ -80,7 +79,7 @@ public class ModelFrame extends JFrame implements ModelListener
       mainPanel.add(sumLineLabel);
       addedComps.add(sumLineLabel);
 
-      SummaryDriftLine sdl = new SummaryDriftLine(cont);
+      BarDriftLine sdl = new BarDriftLine(cont);
       gbl.setConstraints(sdl, new GridBagConstraints(1, 0, 1, 1, 1, 1, GridBagConstraints.CENTER,
             GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
       mainPanel.add(sdl);
@@ -118,23 +117,20 @@ public class ModelFrame extends JFrame implements ModelListener
          counter++;
       }
 
-      if (mod.getNumberOfVoices() < 4)
-         for (Double voice : mod.getVoices())
-         {
-            JLabel ovalLabel = new JLabel("" + voice);
-            gbl.setConstraints(ovalLabel, new GridBagConstraints(0, counter, 1, 1, 0, 0,
-                  GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
-            mainPanel.add(ovalLabel);
-            addedComps.add(ovalLabel);
-
-            DriftLine al = new DriftLine(cont, voice);
-            gbl.setConstraints(al, new GridBagConstraints(1, counter, 1, 1, 1, 1,
-                  GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
-            mainPanel.add(al);
-            addedComps.add(ovalLabel);
-
-            counter++;
-         }
+      /*
+       * if (mod.getNumberOfVoices() < 4) for (Double voice : mod.getVoices()) {
+       * JLabel ovalLabel = new JLabel("" + voice);
+       * gbl.setConstraints(ovalLabel, new GridBagConstraints(0, counter, 1, 1,
+       * 0, 0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5,
+       * 5, 5, 5), 0, 0)); mainPanel.add(ovalLabel); addedComps.add(ovalLabel);
+       * 
+       * DriftLine al = new DriftLine(cont, voice); gbl.setConstraints(al, new
+       * GridBagConstraints(1, counter, 1, 1, 1, 1, GridBagConstraints.CENTER,
+       * GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+       * mainPanel.add(al); addedComps.add(ovalLabel);
+       * 
+       * counter++; }
+       */
 
       this.setExtendedState(JFrame.MAXIMIZED_BOTH);
    }
