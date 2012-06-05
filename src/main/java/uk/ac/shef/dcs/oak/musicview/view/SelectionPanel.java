@@ -152,6 +152,7 @@ public class SelectionPanel extends JPanel implements ModelListener
     */
    private void loadNewModel(final boolean chooseFile)
    {
+
       if (!loading)
       {
          if (chooseFile)

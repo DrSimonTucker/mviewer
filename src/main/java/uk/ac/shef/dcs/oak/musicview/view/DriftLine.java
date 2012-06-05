@@ -1,7 +1,6 @@
 package uk.ac.shef.dcs.oak.musicview.view;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.text.NumberFormat;
 import java.util.Map;
@@ -9,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import uk.ac.shef.dcs.oak.musicview.Controller;
 import uk.ac.shef.dcs.oak.musicview.Event;
@@ -43,12 +43,6 @@ public class DriftLine extends JPanel implements ModelListener
       chosenVoice = voice;
    }
 
-   @Override
-   public Dimension getPreferredSize()
-   {
-      return new Dimension(100, 100);
-   }
-
    /**
     * Method to determine if a given event is valid for the display
     * 
@@ -65,7 +59,14 @@ public class DriftLine extends JPanel implements ModelListener
    public final void newModelLoaded(final Model mod)
    {
       this.model = mod;
-      repaint();
+      SwingUtilities.invokeLater(new Runnable()
+      {
+         @Override
+         public void run()
+         {
+            repaint();
+         }
+      });
    }
 
    @Override

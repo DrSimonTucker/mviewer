@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import uk.ac.shef.dcs.oak.musicview.Controller;
 import uk.ac.shef.dcs.oak.musicview.Event;
@@ -72,13 +73,29 @@ public class ActionLine extends JPanel implements ModelListener
    @Override
    public final void newModelLoaded(final Model mod)
    {
+      // System.out.println("Action loaded new model: " + this.getSize());
       model = mod;
-      repaint();
+      if (this.getSize().getHeight() > 0)
+      {
+         SwingUtilities.invokeLater(new Runnable()
+         {
+            @Override
+            public void run()
+            {
+               repaint();
+            }
+         });
+
+      }
    }
+
+   double id = Math.random();
 
    @Override
    public final void paint(final Graphics g)
    {
+      // System.out.println("repainting " + this.getSize());
+
       super.paint(g);
 
       if (model != null)
