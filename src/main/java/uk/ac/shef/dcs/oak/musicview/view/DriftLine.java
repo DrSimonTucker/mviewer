@@ -74,6 +74,11 @@ public class DriftLine extends JPanel implements ModelListener
    {
       super.paint(g);
 
+      // Draw the baseline
+      g.setColor(Color.lightGray);
+      g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
+      g.setColor(Color.black);
+
       if (model != null)
       {
          double pixelsPerSecond = this.getWidth() / model.getTotalLength();
@@ -97,16 +102,13 @@ public class DriftLine extends JPanel implements ModelListener
          {
             int pixY = this.getHeight() / 2
                   - (int) ((entry.getValue() / maxDrift) * this.getHeight() / 2);
+            System.out.println(pixY);
             int pixX = ActionLine.LEFT_MARGIN + (int) (pixelsPerSecond * entry.getKey());
             if (currX > 0)
                g.drawLine(currX, currY, pixX, currY);
             currX = pixX;
             currY = pixY;
          }
-
-         // Draw the baseline
-         g.setColor(Color.lightGray);
-         g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
 
          // Add the max drift in seconds to the top left of the display
          g.setColor(Color.red);

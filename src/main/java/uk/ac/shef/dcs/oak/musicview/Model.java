@@ -274,10 +274,8 @@ public class Model
    public final double getScoreTime(final Event ev)
    {
       // Use the fixed time if we have it
-      if (ev.getTargetOnset() > 0)
-      {
+      if (ev.getTargetOnset() > -100)
          return ev.getTargetOnset();
-      }
       else
       {
          if (ev.getBar() == (int) ev.getBar())
@@ -630,8 +628,7 @@ public class Model
 
    public static void main(String[] args) throws IOException
    {
-      Model mod = Model.generateModel(new File("/Users/sat/data/renee/nBR-4mel-tenor.txt"), 1, 1,
-            4, 5, 2.5);
+      Model mod = Model.generateModel(new File("/Users/sat/data/renee/n8R.txt"), 1, 1, 0, 5, 2.5);
 
       for (Event ev : mod.getEvents())
          // System.out.println(ev + " and " + ev.getBar());

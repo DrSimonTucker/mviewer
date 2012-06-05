@@ -21,7 +21,7 @@ public class Event
    private final double scoreTime;
 
    /** The proposed time of the event */
-   private double targetOnset;
+   private double targetOnset = -100;
 
    /** The proposed velocity of the event */
    private final double targetVelocity;
