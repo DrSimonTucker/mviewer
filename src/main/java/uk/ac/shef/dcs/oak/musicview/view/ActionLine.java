@@ -76,7 +76,6 @@ public class ActionLine extends JPanel implements ModelListener
       // System.out.println("Action loaded new model: " + this.getSize());
       model = mod;
       if (this.getSize().getHeight() > 0)
-      {
          SwingUtilities.invokeLater(new Runnable()
          {
             @Override
@@ -85,8 +84,6 @@ public class ActionLine extends JPanel implements ModelListener
                repaint();
             }
          });
-
-      }
    }
 
    double id = Math.random();
@@ -113,7 +110,7 @@ public class ActionLine extends JPanel implements ModelListener
                      + MIN_CIRCLE_SIZE;
 
                // Draw the Desired onset in black
-               g.setColor(Color.lightGray);
+               g.setColor(Color.darkGray);
                int actPixCent = LEFT_MARGIN
                      + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
                int actYPixCent = this.getHeight() / 2 + OFFSET;

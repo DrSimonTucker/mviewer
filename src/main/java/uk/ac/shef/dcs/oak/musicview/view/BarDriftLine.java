@@ -94,7 +94,7 @@ public class BarDriftLine extends JPanel implements ModelListener
             double perc = 1 - ((barTimes.get(i + 1) - barTimes.get(i)) - minBarTime)
                   / (maxBarTime - minBarTime);
 
-            int height = (int) (perc * ((this.getHeight() - MARGIN) / 2)) + this.getHeight() / 2;
+            int height = (int) (perc * ((this.getHeight() - MARGIN)));
 
             int pixPosLeft = LEFT_MARGIN
                   + (int) ((barTimes.get(i) - model.getOffset()) * pixelPerSecond);
