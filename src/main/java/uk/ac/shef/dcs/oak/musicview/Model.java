@@ -332,8 +332,19 @@ public class Model
     */
    public final double getVelocityPerc(final Event ev)
    {
-
       return (ev.getVelocity() - getMinVelocity()) / (getMaxVelocity() - getMinVelocity());
+   }
+
+   /**
+    * Gets the target velocity as a normalised percentage
+    * 
+    * @param ev
+    *           The event to get percentage for
+    * @return The velocity as a double in the range [0,1]
+    */
+   public final double getTargetVelocityPerc(final Event ev)
+   {
+      return (ev.getTargetVelocity() - getMinVelocity()) / (getMaxVelocity() - getMinVelocity());
    }
 
    public final Set<Double> getVoices()

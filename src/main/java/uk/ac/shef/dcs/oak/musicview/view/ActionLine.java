@@ -108,14 +108,16 @@ public class ActionLine extends JPanel implements ModelListener
                int velCircleSize = GIVEN_CIRCLE_SIZE;
                int circleSize = (int) (percVelocity * (MAX_CIRCLE_SIZE - MIN_CIRCLE_SIZE))
                      + MIN_CIRCLE_SIZE;
+               int targetCircleSize = (int) (model.getTargetVelocityPerc(ev) * (MAX_CIRCLE_SIZE - MIN_CIRCLE_SIZE))
+                     + MIN_CIRCLE_SIZE;
 
                // Draw the Desired onset in black
                g.setColor(Color.darkGray);
                int actPixCent = LEFT_MARGIN
                      + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
                int actYPixCent = this.getHeight() / 2 + OFFSET;
-               g.drawOval(actPixCent - velCircleSize / 2, actYPixCent - circleSize / 2,
-                     velCircleSize, circleSize);
+               g.drawOval(actPixCent - velCircleSize / 2, actYPixCent - targetCircleSize / 2,
+                     velCircleSize, targetCircleSize);
 
                // Draw a circle at the relevant point and the relevant pitch
                g.setColor(Color.RED);
