@@ -479,7 +479,7 @@ public class Model
 
             double targetVel = -100;
             if (targetvel >= 0)
-               targetOnset = Double.parseDouble(nextLine[targetvel]);
+               targetVel = Double.parseDouble(nextLine[targetvel]);
 
             if (tScoreTime >= lower && tScoreTime <= upper)
             {
@@ -505,11 +505,13 @@ public class Model
 
                   // If we don't have the target time, use the given time
                   // to compute the bar times
+                  System.out.println("TARGET = " + targetOnset + " and " + targetVel);
                   if (targetOnset > 0)
                      targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
                   else
                      targBarTimeMap.get((int) ev.getBar()).add(
                            Double.parseDouble(nextLine[onsetPos]));
+
                   playTargBarTimeMap.get((int) ev.getBar()).add(
                         Double.parseDouble(nextLine[onsetPos]));
 
@@ -564,6 +566,7 @@ public class Model
                         }
                         // If we don't have the target time, use the given time
                         // to compute the bar times
+
                         if (targetOnset > 0)
                            targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
                         else
@@ -591,8 +594,8 @@ public class Model
       // Set the target bar times
       for (Integer key : targBarTimeMap.keySet())
       {
-         System.out.println("Putting: " + key);
          Double sum = 0.0;
+         System.out.println(targBarTimeMap.get(key));
          for (Double val : targBarTimeMap.get(key))
             sum += val;
          mod.barStarts.put(key, sum / targBarTimeMap.get(key).size());
@@ -606,10 +609,6 @@ public class Model
       // Adjust for upbeats
       if (mod.minBar != (int) mod.minBar)
       {
-         System.out.println("UPBEAT");
-         System.out.println(mod.minBar + " and " + mod.barStarts.get((int) Math.ceil(mod.minBar)));
-         System.out.println(mod.barStarts);
-
          double offsetTime = mod.barStarts.get((int) Math.ceil(mod.minBar)) - mod.minTime;
          double value = offsetTime / ((int) Math.ceil(mod.minBar) - mod.minBar);
          double time = mod.minTime - mod.minBar * value;
@@ -655,7 +654,10 @@ public class Model
    {
       for (int i = 0; i < list.length; i++)
          if (list[i].equals(key))
+         {
+            System.out.println(list[i] + " => " + key + " (" + i + ")");
             return i;
+         }
       return -1;
    }
 
