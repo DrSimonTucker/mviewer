@@ -26,6 +26,8 @@ public class BarDriftLine extends JPanel implements ModelListener
 
    private static final int MARGIN = 10;
 
+   double id = Math.random();
+
    /** The list of events that should be plotted */
    private Model model;
 
@@ -58,8 +60,6 @@ public class BarDriftLine extends JPanel implements ModelListener
          });
    }
 
-   double id = Math.random();
-
    @Override
    public final void paint(final Graphics g)
    {
@@ -72,6 +72,7 @@ public class BarDriftLine extends JPanel implements ModelListener
          // Do some housekeeping
          double pixelPerSecond = (this.getWidth() - LEFT_MARGIN * 2) / model.getTotalLength();
          List<Double> barTimes = model.getBarTimes();
+         List<Double> playBarTimes = model.getPlayBarTimes();
 
          List<Double> barLengths = new LinkedList<Double>();
          double maxBarTime = 0;
@@ -93,7 +94,21 @@ public class BarDriftLine extends JPanel implements ModelListener
          {
             double perc = 1 - ((barTimes.get(i + 1) - barTimes.get(i)) - minBarTime)
                   / (maxBarTime - minBarTime);
+            int height = (int) (perc * ((this.getHeight() - MARGIN)));
 
+            int pixPosLeft = LEFT_MARGIN
+                  + (int) ((barTimes.get(i) - model.getOffset()) * pixelPerSecond);
+            int pixPosRight = LEFT_MARGIN
+                  + (int) ((barTimes.get(i + 1) - model.getOffset()) * pixelPerSecond);
+            g.drawLine(pixPosLeft, height, pixPosRight, height);
+         }
+
+         // Draw the bar lines if needed
+         g.setColor(Color.red);
+         for (int i = 0; i < barTimes.size() - 1; i++)
+         {
+            double perc = 1 - ((playBarTimes.get(i + 1) - playBarTimes.get(i)) - minBarTime)
+                  / (maxBarTime - minBarTime);
             int height = (int) (perc * ((this.getHeight() - MARGIN)));
 
             int pixPosLeft = LEFT_MARGIN

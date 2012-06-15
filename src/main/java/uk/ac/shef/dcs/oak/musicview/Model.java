@@ -28,370 +28,6 @@ public class Model
    /** Mapping from note names to their corresponding pitch number */
    private static Map<String, Double> noteMap = new TreeMap<String, Double>();
 
-   /** The average length of a bar in seconds */
-   private double avgBarLength;
-
-   /** The length of a bar in seconds */
-   private double barLength = 1;
-
-   private final Map<Integer, Double> barStarts = new TreeMap<Integer, Double>();
-
-   /** The bottom pitch */
-   private double bottomPitch = 0.0;
-
-   /** The collection of events that this model represents */
-   private final List<Event> events = new LinkedList<Event>();
-
-   /** Model listeners */
-   private final Collection<ModelListener> listeners = new LinkedList<ModelListener>();
-
-   /** The lower bound to zoom to */
-   private double lowerBound = 1;
-
-   /** The maximum bar number seen overall */
-   private double maxBar = -1;
-
-   /** The minimum bar number */
-   private double minBar = Double.MAX_VALUE;
-
-   /** The lowest recorded time */
-   private double minTime = Double.MAX_VALUE;
-
-   /** The selected subject */
-   private Integer selectedSubject = -1;
-
-   /** The selected trial */
-   private Integer selectedTrial = -1;
-
-   /** The list of all the subjects */
-   private final Set<Integer> subjects = new TreeSet<Integer>();
-
-   /** The list of all the trials */
-   private final Set<Integer> trials = new TreeSet<Integer>();
-
-   /** The upper bound to zoom to */
-   private double upperBound = -1;
-
-   /**
-    * Adds a listener for models
-    * 
-    * @param listener
-    *           The listener to add
-    */
-   public final void addListener(final ModelListener listener)
-   {
-      listeners.add(listener);
-      listener.newModelLoaded(this);
-   }
-
-   /**
-    * Forces an update on the listeners
-    */
-   public final void forceUpdate()
-   {
-      updateListeners();
-   }
-
-   /**
-    * Gets all the available subjects for this file
-    * 
-    * @return A {@link Collection} of Integers representing the subjects
-    */
-   public final Collection<Integer> getAllSubjects()
-   {
-      return subjects;
-   }
-
-   /**
-    * Gets all the available trials for this file and trial
-    * 
-    * @return A {@link Collection} of Integers representing the trials
-    */
-   public final Collection<Integer> getAllTrials()
-   {
-      return trials;
-   }
-
-   /**
-    * Gets the average length of a bar
-    * 
-    * @return The average length of a bar as a double (in seconds)
-    */
-   public final double getAverageBarLength()
-   {
-      return avgBarLength;
-   }
-
-   /**
-    * Gets the times in seconds of each bar
-    * 
-    * @return A Collection of times for each bar
-    */
-   public final List<Double> getBarTimes()
-   {
-      List<Double> barTimes = new LinkedList<Double>();
-
-      // if (events.size() > 0 && events.get(0).getTargetOnset() < 0)
-      // {
-      // for (int i = (int) lowerBound; i <= upperBound; i++)
-      // barTimes.add(i * barLength);
-      // }
-      // else
-      for (int i = (int) lowerBound; i <= upperBound; i++)
-         if (barStarts.containsKey(i))
-            barTimes.add(barStarts.get(i));
-         else
-            barTimes.add(0.0);
-      return barTimes;
-
-   }
-
-   /**
-    * Gets the set of events that the model represents
-    * 
-    * @return {@link Collection} of events
-    */
-   public final Collection<Event> getEvents()
-   {
-      return events;
-   }
-
-   /**
-    * Gets all the listeners to this model
-    * 
-    * @return A {@link Collection} of {@link ModelListener}s
-    */
-   public final Collection<ModelListener> getListeners()
-   {
-      return listeners;
-   }
-
-   /**
-    * Gets the maximum bar number in the piece
-    * 
-    * @return The max bar number as a double
-    */
-   public final double getMaxBar()
-   {
-      return maxBar;
-   }
-
-   public final double getMinBar()
-   {
-      return minBar;
-   }
-
-   /**
-    * Gets the maximum velocity of all the notes
-    * 
-    * @param voice
-    *           the voice to get the velocity for
-    * @return The maximum velocity as a double
-    */
-   public final double getMaxVelocity()
-   {
-      double maxVel = 0;
-      for (Event ev : getEvents())
-         maxVel = Math.max(ev.getVelocity(), maxVel);
-      return maxVel;
-   }
-
-   /**
-    * Gets the minimum velocity of all the notes
-    * 
-    * @param voice
-    *           the voice to get the velocity for
-    * @return The minimum velocity as a double
-    */
-   public final double getMinVelocity()
-   {
-      double minVel = Double.MAX_VALUE;
-      for (Event ev : getEvents())
-         minVel = Math.min(ev.getVelocity(), minVel);
-      return minVel;
-   }
-
-   /**
-    * Gets the number of bars in the recording
-    * 
-    * @return THe number of bars (double but whole number)
-    */
-   public final double getNumberOfBars()
-   {
-      return upperBound - lowerBound;
-   }
-
-   public final int getNumberOfVoices()
-   {
-      return getVoices().size();
-   }
-
-   /**
-    * Gets the time offset for the given zoom level
-    * 
-    * @return The time offset for the given zoom level as a double
-    */
-   public final double getOffset()
-   {
-      return lowerBound * barLength;
-   }
-
-   /**
-    * Gets the pitch as a percentage of the range
-    * 
-    * @param ev
-    *           THe event to get the pitch perc for
-    * @return The pitch as a percentage of the range ([0,1])
-    */
-   public final double getPitchPerc(final Event ev)
-   {
-      double pitchRange = getPitchRange();
-      return (ev.getPitch() - bottomPitch) / pitchRange;
-   }
-
-   /**
-    * Gets the pitch range of all the events
-    * 
-    * @return double pitch range (top - bottom pitch)
-    */
-   public final double getPitchRange()
-   {
-      double topPitch = events.get(0).getPitch();
-      bottomPitch = events.get(0).getPitch();
-
-      for (int i = 1; i < events.size(); i++)
-      {
-         topPitch = Math.max(topPitch, events.get(i).getPitch());
-         bottomPitch = Math.min(bottomPitch, events.get(i).getPitch());
-      }
-
-      return topPitch - bottomPitch;
-   }
-
-   /**
-    * Gets the score time of the event
-    * 
-    * @param ev
-    *           The event to get time for
-    * @return The time in seconds that this event should have occured
-    */
-   public final double getScoreTime(final Event ev)
-   {
-      // Use the fixed time if we have it
-      if (ev.getTargetOnset() > -100)
-         return ev.getTargetOnset();
-      else
-      {
-         if (ev.getBar() == (int) ev.getBar())
-            return getBarTimes().get((int) (ev.getBar() - lowerBound));
-
-         int bar = (int) ev.getBar();
-         double barStartTime = getBarTimes().get(bar - (int) lowerBound);
-         double barEndTime = getBarTimes().get(1 + bar - (int) lowerBound);
-         return barStartTime + (ev.getBar() - bar) * (barEndTime - barStartTime);
-      }
-   }
-
-   /**
-    * Gets the chosen subject
-    * 
-    * @return chosen subject
-    */
-   public final Integer getSelectedSubject()
-   {
-      return selectedSubject;
-   }
-
-   /**
-    * Gets the chosen trial
-    * 
-    * @return chosen trial
-    */
-   public final Integer getSelectedTrial()
-   {
-      return selectedTrial;
-   }
-
-   /**
-    * Computes the total length of the piece
-    * 
-    * @return double length of the piece in seconds - guaranteed to be higher
-    *         that the number of notes
-    */
-   public final double getTotalLength()
-   {
-      return getNumberOfBars() * barLength;
-   }
-
-   /**
-    * Gets the velocity as a normalised percentage
-    * 
-    * @param ev
-    *           The event to get percentage for
-    * @return The velocity as a double in the range [0,1]
-    */
-   public final double getVelocityPerc(final Event ev)
-   {
-      return (ev.getVelocity() - getMinVelocity()) / (getMaxVelocity() - getMinVelocity());
-   }
-
-   /**
-    * Gets the target velocity as a normalised percentage
-    * 
-    * @param ev
-    *           The event to get percentage for
-    * @return The velocity as a double in the range [0,1]
-    */
-   public final double getTargetVelocityPerc(final Event ev)
-   {
-      return (ev.getTargetVelocity() - getMinVelocity()) / (getMaxVelocity() - getMinVelocity());
-   }
-
-   public final Set<Double> getVoices()
-   {
-      Set<Double> voices = new TreeSet<Double>();
-      for (Event ev : events)
-         voices.add(ev.getPitch());
-      return voices;
-   }
-
-   /**
-    * Sets the length of a bar
-    * 
-    * @param val
-    *           The length of a bar in seconds
-    */
-   public final void setBarLength(final double val)
-   {
-      barLength = val;
-      updateListeners();
-   }
-
-   /**
-    * Updates the listeners that we have a new model
-    */
-   private void updateListeners()
-   {
-      // Prevents concurrent modifications elsewhere (hack)
-      List<ModelListener> tempListeners = new LinkedList<ModelListener>(listeners);
-      for (ModelListener listener : tempListeners)
-         listener.newModelLoaded(this);
-   }
-
-   /**
-    * Zooms in the model to a given range
-    * 
-    * @param lower
-    *           THe lower range to zoom to
-    * @param upper
-    *           THe upper range to zoom to
-    */
-   public final void zoom(final double lower, final double upper)
-   {
-      lowerBound = lower;
-      upperBound = upper;
-   }
-
    /**
     * Helper function to get the pitch value from the string
     * 
@@ -453,6 +89,7 @@ public class Model
 
       Map<Integer, Double> barTimeMap = new TreeMap<Integer, Double>();
       Map<Integer, List<Double>> targBarTimeMap = new TreeMap<Integer, List<Double>>();
+      Map<Integer, List<Double>> playTargBarTimeMap = new TreeMap<Integer, List<Double>>();
 
       // Two types of data
       if (subj == -1)
@@ -484,7 +121,10 @@ public class Model
                {
                   // Fill up the targ Bar TimeMap
                   if (!targBarTimeMap.containsKey((int) ev.getBar()))
+                  {
                      targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
+                     playTargBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
+                  }
 
                   // If we don't have the target time, use the given time
                   // to compute the bar times
@@ -493,6 +133,8 @@ public class Model
                   else
                      targBarTimeMap.get((int) ev.getBar()).add(
                            Double.parseDouble(nextLine[onsetPos]));
+                  playTargBarTimeMap.get((int) ev.getBar()).add(
+                        Double.parseDouble(nextLine[onsetPos]));
 
                   barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                         Double.parseDouble(nextLine[onsetPos]));
@@ -548,6 +190,9 @@ public class Model
                         else
                            targBarTimeMap.get((int) ev.getBar()).add(
                                  Double.parseDouble(nextLine[onsetPos]));
+                        System.out.println(playTargBarTimeMap.size());
+                        playTargBarTimeMap.get((int) ev.getBar()).add(
+                              Double.parseDouble(nextLine[onsetPos]));
                      }
                      barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                            Double.parseDouble(nextLine[onsetPos]));
@@ -572,6 +217,11 @@ public class Model
          for (Double val : targBarTimeMap.get(key))
             sum += val;
          mod.barStarts.put(key, sum / targBarTimeMap.get(key).size());
+
+         sum = 0.0;
+         for (Double val : playTargBarTimeMap.get(key))
+            sum += val;
+         mod.playBarStarts.put(key, sum / playTargBarTimeMap.get(key).size());
       }
 
       // Adjust for upbeats
@@ -665,5 +315,382 @@ public class Model
 
       System.out.println("BAR TIMES = " + mod.getBarTimes());
       System.out.println("LOW = " + mod.getMaxBar());
+   }
+
+   /** The average length of a bar in seconds */
+   private double avgBarLength;
+
+   /** The length of a bar in seconds */
+   private double barLength = 1;
+
+   private final Map<Integer, Double> barStarts = new TreeMap<Integer, Double>();
+
+   /** The bottom pitch */
+   private double bottomPitch = 0.0;
+
+   /** The collection of events that this model represents */
+   private final List<Event> events = new LinkedList<Event>();
+
+   /** Model listeners */
+   private final Collection<ModelListener> listeners = new LinkedList<ModelListener>();
+
+   /** The lower bound to zoom to */
+   private double lowerBound = 1;
+
+   /** The maximum bar number seen overall */
+   private double maxBar = -1;
+
+   /** The minimum bar number */
+   private double minBar = Double.MAX_VALUE;
+
+   /** The lowest recorded time */
+   private double minTime = Double.MAX_VALUE;
+
+   private final Map<Integer, Double> playBarStarts = new TreeMap<Integer, Double>();
+
+   /** The selected subject */
+   private Integer selectedSubject = -1;
+
+   /** The selected trial */
+   private Integer selectedTrial = -1;
+
+   /** The list of all the subjects */
+   private final Set<Integer> subjects = new TreeSet<Integer>();
+
+   /** The list of all the trials */
+   private final Set<Integer> trials = new TreeSet<Integer>();
+
+   /** The upper bound to zoom to */
+   private double upperBound = -1;
+
+   /**
+    * Adds a listener for models
+    * 
+    * @param listener
+    *           The listener to add
+    */
+   public final void addListener(final ModelListener listener)
+   {
+      listeners.add(listener);
+      listener.newModelLoaded(this);
+   }
+
+   /**
+    * Forces an update on the listeners
+    */
+   public final void forceUpdate()
+   {
+      updateListeners();
+   }
+
+   /**
+    * Gets all the available subjects for this file
+    * 
+    * @return A {@link Collection} of Integers representing the subjects
+    */
+   public final Collection<Integer> getAllSubjects()
+   {
+      return subjects;
+   }
+
+   /**
+    * Gets all the available trials for this file and trial
+    * 
+    * @return A {@link Collection} of Integers representing the trials
+    */
+   public final Collection<Integer> getAllTrials()
+   {
+      return trials;
+   }
+
+   /**
+    * Gets the average length of a bar
+    * 
+    * @return The average length of a bar as a double (in seconds)
+    */
+   public final double getAverageBarLength()
+   {
+      return avgBarLength;
+   }
+
+   /**
+    * Gets the times in seconds of each bar
+    * 
+    * @return A Collection of times for each bar
+    */
+   public final List<Double> getBarTimes()
+   {
+      List<Double> barTimes = new LinkedList<Double>();
+
+      // if (events.size() > 0 && events.get(0).getTargetOnset() < 0)
+      // {
+      // for (int i = (int) lowerBound; i <= upperBound; i++)
+      // barTimes.add(i * barLength);
+      // }
+      // else
+      for (int i = (int) lowerBound; i <= upperBound; i++)
+         if (playBarStarts.containsKey(i))
+            barTimes.add(playBarStarts.get(i));
+         else
+            barTimes.add(0.0);
+      return barTimes;
+
+   }
+
+   /**
+    * Gets the set of events that the model represents
+    * 
+    * @return {@link Collection} of events
+    */
+   public final Collection<Event> getEvents()
+   {
+      return events;
+   }
+
+   /**
+    * Gets all the listeners to this model
+    * 
+    * @return A {@link Collection} of {@link ModelListener}s
+    */
+   public final Collection<ModelListener> getListeners()
+   {
+      return listeners;
+   }
+
+   /**
+    * Gets the maximum bar number in the piece
+    * 
+    * @return The max bar number as a double
+    */
+   public final double getMaxBar()
+   {
+      return maxBar;
+   }
+
+   /**
+    * Gets the maximum velocity of all the notes
+    * 
+    * @param voice
+    *           the voice to get the velocity for
+    * @return The maximum velocity as a double
+    */
+   public final double getMaxVelocity()
+   {
+      double maxVel = 0;
+      for (Event ev : getEvents())
+         maxVel = Math.max(ev.getVelocity(), maxVel);
+      return maxVel;
+   }
+
+   public final double getMinBar()
+   {
+      return minBar;
+   }
+
+   /**
+    * Gets the minimum velocity of all the notes
+    * 
+    * @param voice
+    *           the voice to get the velocity for
+    * @return The minimum velocity as a double
+    */
+   public final double getMinVelocity()
+   {
+      double minVel = Double.MAX_VALUE;
+      for (Event ev : getEvents())
+         minVel = Math.min(ev.getVelocity(), minVel);
+      return minVel;
+   }
+
+   /**
+    * Gets the number of bars in the recording
+    * 
+    * @return THe number of bars (double but whole number)
+    */
+   public final double getNumberOfBars()
+   {
+      return upperBound - lowerBound;
+   }
+
+   public final int getNumberOfVoices()
+   {
+      return getVoices().size();
+   }
+
+   /**
+    * Gets the time offset for the given zoom level
+    * 
+    * @return The time offset for the given zoom level as a double
+    */
+   public final double getOffset()
+   {
+      return lowerBound * barLength;
+   }
+
+   /**
+    * Gets the pitch as a percentage of the range
+    * 
+    * @param ev
+    *           THe event to get the pitch perc for
+    * @return The pitch as a percentage of the range ([0,1])
+    */
+   public final double getPitchPerc(final Event ev)
+   {
+      double pitchRange = getPitchRange();
+      return (ev.getPitch() - bottomPitch) / pitchRange;
+   }
+
+   /**
+    * Gets the pitch range of all the events
+    * 
+    * @return double pitch range (top - bottom pitch)
+    */
+   public final double getPitchRange()
+   {
+      double topPitch = events.get(0).getPitch();
+      bottomPitch = events.get(0).getPitch();
+
+      for (int i = 1; i < events.size(); i++)
+      {
+         topPitch = Math.max(topPitch, events.get(i).getPitch());
+         bottomPitch = Math.min(bottomPitch, events.get(i).getPitch());
+      }
+
+      return topPitch - bottomPitch;
+   }
+
+   public final List<Double> getPlayBarTimes()
+   {
+      List<Double> barTimes = new LinkedList<Double>();
+      for (int i = (int) lowerBound; i <= upperBound; i++)
+         if (barStarts.containsKey(i))
+            barTimes.add(barStarts.get(i));
+         else
+            barTimes.add(0.0);
+      return barTimes;
+   }
+
+   /**
+    * Gets the score time of the event
+    * 
+    * @param ev
+    *           The event to get time for
+    * @return The time in seconds that this event should have occured
+    */
+   public final double getScoreTime(final Event ev)
+   {
+      // Use the fixed time if we have it
+      if (ev.getTargetOnset() > -100)
+         return ev.getTargetOnset();
+      else
+      {
+         if (ev.getBar() == (int) ev.getBar())
+            return getBarTimes().get((int) (ev.getBar() - lowerBound));
+
+         int bar = (int) ev.getBar();
+         double barStartTime = getBarTimes().get(bar - (int) lowerBound);
+         double barEndTime = getBarTimes().get(1 + bar - (int) lowerBound);
+         return barStartTime + (ev.getBar() - bar) * (barEndTime - barStartTime);
+      }
+   }
+
+   /**
+    * Gets the chosen subject
+    * 
+    * @return chosen subject
+    */
+   public final Integer getSelectedSubject()
+   {
+      return selectedSubject;
+   }
+
+   /**
+    * Gets the chosen trial
+    * 
+    * @return chosen trial
+    */
+   public final Integer getSelectedTrial()
+   {
+      return selectedTrial;
+   }
+
+   /**
+    * Gets the target velocity as a normalised percentage
+    * 
+    * @param ev
+    *           The event to get percentage for
+    * @return The velocity as a double in the range [0,1]
+    */
+   public final double getTargetVelocityPerc(final Event ev)
+   {
+      return (ev.getTargetVelocity() - getMinVelocity()) / (getMaxVelocity() - getMinVelocity());
+   }
+
+   /**
+    * Computes the total length of the piece
+    * 
+    * @return double length of the piece in seconds - guaranteed to be higher
+    *         that the number of notes
+    */
+   public final double getTotalLength()
+   {
+      return getNumberOfBars() * barLength;
+   }
+
+   /**
+    * Gets the velocity as a normalised percentage
+    * 
+    * @param ev
+    *           The event to get percentage for
+    * @return The velocity as a double in the range [0,1]
+    */
+   public final double getVelocityPerc(final Event ev)
+   {
+      return (ev.getVelocity() - getMinVelocity()) / (getMaxVelocity() - getMinVelocity());
+   }
+
+   public final Set<Double> getVoices()
+   {
+      Set<Double> voices = new TreeSet<Double>();
+      for (Event ev : events)
+         voices.add(ev.getPitch());
+      return voices;
+   }
+
+   /**
+    * Sets the length of a bar
+    * 
+    * @param val
+    *           The length of a bar in seconds
+    */
+   public final void setBarLength(final double val)
+   {
+      barLength = val;
+      updateListeners();
+   }
+
+   /**
+    * Updates the listeners that we have a new model
+    */
+   private void updateListeners()
+   {
+      // Prevents concurrent modifications elsewhere (hack)
+      List<ModelListener> tempListeners = new LinkedList<ModelListener>(listeners);
+      for (ModelListener listener : tempListeners)
+         listener.newModelLoaded(this);
+   }
+
+   /**
+    * Zooms in the model to a given range
+    * 
+    * @param lower
+    *           THe lower range to zoom to
+    * @param upper
+    *           THe upper range to zoom to
+    */
+   public final void zoom(final double lower, final double upper)
+   {
+      lowerBound = lower;
+      upperBound = upper;
    }
 }
