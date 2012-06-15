@@ -301,7 +301,7 @@ public class Model
 
    public final double getRelativeVelocity(final Event ev)
    {
-      return (ev.getVelocity() - ev.getTargetVelocity()) / maxVelocityDifference;
+      return (ev.getVelocity() - ev.getTargetVelocity());
    }
 
    /**
@@ -502,7 +502,7 @@ public class Model
 
             double targetVel = -100;
             if (targetvel >= 0)
-               targetOnset = Double.parseDouble(nextLine[targetvel]);
+               targetVel = Double.parseDouble(nextLine[targetvel]);
 
             if (tScoreTime >= lower && tScoreTime <= upper)
             {

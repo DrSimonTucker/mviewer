@@ -104,11 +104,14 @@ public class MetronomicActionLine extends JPanel implements ModelListener
          for (Event ev : model.getEvents())
             if (isValidEvent(ev))
             {
-               double percVelocity = model.getRelativeVelocity(ev) / 4;
+               double percVelocity = model.getRelativeVelocity(ev);
+               System.out.println("perc = " + percVelocity);
                int velCircleSize = GIVEN_CIRCLE_SIZE;
-               int circleSize = (int) (percVelocity * (MAX_CIRCLE_SIZE - MIN_CIRCLE_SIZE))
-                     + MIN_CIRCLE_SIZE;
+
                int targetCircleSize = MIN_CIRCLE_SIZE + ((MAX_CIRCLE_SIZE - MIN_CIRCLE_SIZE) / 2);
+
+               int circleSize = targetCircleSize;
+               circleSize += (circleSize * percVelocity);
 
                // Draw the Desired onset in black
                g.setColor(Color.darkGray);
