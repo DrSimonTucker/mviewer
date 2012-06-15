@@ -193,6 +193,16 @@ public class Model
       return maxVel;
    }
 
+   public final List<Double> getMetronomicBarTimes()
+   {
+      List<Double> barTimes = new LinkedList<Double>();
+
+      for (int i = (int) lowerBound; i <= upperBound; i++)
+         barTimes.add(avgBarLength * i);
+
+      return barTimes;
+   }
+
    public final double getMinBar()
    {
       return minBar;

@@ -71,7 +71,7 @@ public class BarDriftLine extends JPanel implements ModelListener
       {
          // Do some housekeeping
          double pixelPerSecond = (this.getWidth() - LEFT_MARGIN * 2) / model.getTotalLength();
-         List<Double> barTimes = model.getBarTimes();
+         List<Double> barTimes = model.getMetronomicBarTimes();
          List<Double> playBarTimes = model.getPlayBarTimes();
          System.out.println("HERE = " + playBarTimes);
          System.out.println("ALSO = " + barTimes);
