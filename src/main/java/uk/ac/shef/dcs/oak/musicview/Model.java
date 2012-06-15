@@ -51,6 +51,9 @@ public class Model
    /** The maximum bar number seen overall */
    private double maxBar = -1;
 
+   /** The maximum velocity difference */
+   private double maxVelocityDifference = 0.0;
+
    /** The minimum bar number */
    private double minBar = Double.MAX_VALUE;
 
@@ -193,6 +196,21 @@ public class Model
       return maxVel;
    }
 
+   public final List<Double> getMetronomicBarTimes()
+   {
+      List<Double> barTimes = new LinkedList<Double>();
+
+      for (int i = (int) lowerBound; i <= upperBound; i++)
+         barTimes.add(avgBarLength * i);
+
+      return barTimes;
+   }
+
+   public final double getMetronomicScoreTime(final Event ev)
+   {
+      return ev.getBar() * avgBarLength;
+   }
+
    public final double getMinBar()
    {
       return minBar;
@@ -279,6 +297,11 @@ public class Model
          else
             barTimes.add(0.0);
       return barTimes;
+   }
+
+   public final double getRelativeVelocity(final Event ev)
+   {
+      return (ev.getVelocity() - ev.getTargetVelocity()) / maxVelocityDifference;
    }
 
    /**
@@ -516,6 +539,8 @@ public class Model
                   barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                         Double.parseDouble(nextLine[onsetPos]));
                }
+               mod.maxVelocityDifference = Math.max(ev.getTargetVelocity() - ev.getVelocity(),
+                     mod.maxVelocityDifference);
             }
 
             mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
@@ -572,10 +597,15 @@ public class Model
 
                         playTargBarTimeMap.get((int) ev.getBar()).add(
                               Double.parseDouble(nextLine[onsetPos]));
+
+                        mod.maxVelocityDifference = Math.max(
+                              ev.getTargetVelocity() - ev.getVelocity(), mod.maxVelocityDifference);
+
                      }
                      barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
                            Double.parseDouble(nextLine[onsetPos]));
                   }
+
                }
 
                mod.trials.add(Integer.parseInt(nextLine[tri]));
