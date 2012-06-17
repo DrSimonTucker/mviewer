@@ -13,16 +13,19 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import uk.ac.shef.dcs.oak.musicview.view.ActionLine;
 import uk.ac.shef.dcs.oak.musicview.view.BarDriftLine;
+import uk.ac.shef.dcs.oak.musicview.view.MetronomicActionLine;
 import uk.ac.shef.dcs.oak.musicview.view.SelectionPanel;
-import uk.ac.shef.dcs.oak.musicview.view.SummaryActionLine;
 
 public class ModelFrame extends JFrame implements ModelListener
 {
+   List<JComponent> addedComps = new LinkedList<JComponent>();
+
    Controller cont = null;
+   GridBagLayout gbl = new GridBagLayout();
 
    JPanel mainPanel = new JPanel();
+
    Model mod = null;
 
    SelectionPanel pan;
@@ -60,10 +63,6 @@ public class ModelFrame extends JFrame implements ModelListener
       });
    }
 
-   List<JComponent> addedComps = new LinkedList<JComponent>();
-
-   GridBagLayout gbl = new GridBagLayout();
-
    private void refreshGUI()
    {
       // Remove all the components and then destroy them
@@ -91,12 +90,6 @@ public class ModelFrame extends JFrame implements ModelListener
       mainPanel.add(sumActionLabel);
       addedComps.add(sumActionLabel);
 
-      SummaryActionLine sal = new SummaryActionLine(cont);
-      gbl.setConstraints(sal, new GridBagConstraints(1, 1, 1, 1, 1, 1, GridBagConstraints.CENTER,
-            GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
-      mainPanel.add(sal);
-      addedComps.add(sal);
-
       int counter = 2;
       // System.out.println("VOICES = " + mod.getVoices());
       // System.exit(1);
@@ -108,7 +101,7 @@ public class ModelFrame extends JFrame implements ModelListener
          mainPanel.add(ovalLabel);
          addedComps.add(ovalLabel);
 
-         ActionLine al = new ActionLine(cont, voice);
+         MetronomicActionLine al = new MetronomicActionLine(cont, voice);
          gbl.setConstraints(al, new GridBagConstraints(1, counter, 1, 1, 1, 1,
                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
          mainPanel.add(al);

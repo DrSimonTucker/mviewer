@@ -28,6 +28,306 @@ public class Model
    /** Mapping from note names to their corresponding pitch number */
    private static Map<String, Double> noteMap = new TreeMap<String, Double>();
 
+   /**
+    * Helper function to get the pitch value from the string
+    * 
+    * @param pitchName
+    *           The string name of the pitch value (e.g. A3)
+    * @return The corresponding pitch value
+    */
+   private static double convertPitch(final String pitchName)
+   {
+      if (noteMap.size() == 0)
+         loadNoteMap();
+      return noteMap.get(pitchName);
+   }
+
+   /**
+    * Generates a model given a file and other parameters
+    * 
+    * @param f
+    *           File to read
+    * @param subject
+    *           THe subject to consider
+    * @param trial
+    *           The trial to consider
+    * @param lower
+    *           the Lower bound of zoom
+    * @param upper
+    *           the Upper bound of zoom
+    * @param bLength
+    *           The length of a bar
+    * @return A valid model for this subject and trial
+    * @throws IOException
+    *            if something goes wrong reading the file
+    */
+   public static final Model generateModel(final File f, final int subject, final int trial,
+         final double lower, final double upper, final double bLength) throws IOException
+   {
+      Model mod = new Model();
+      mod.selectedSubject = subject;
+      mod.selectedTrial = trial;
+      mod.lowerBound = lower;
+      mod.upperBound = upper;
+      mod.barLength = bLength;
+
+      CSVReader reader = new CSVReader(new FileReader(f));
+      String[] headers = reader.readNext();
+      int onsetPos, scoreTime, velocity, voice, subj, tri;
+      onsetPos = getHeader(headers, "Onset");
+      scoreTime = getHeader(headers, "ScoreTime");
+      velocity = getHeader(headers, "Velocity");
+      voice = getHeader(headers, "Voice");
+      subj = getHeader(headers, "Subject");
+      tri = getHeader(headers, "Trial");
+      int pitch = getHeader(headers, "Pitch");
+      int targetons = getHeader(headers, "TargetOnset");
+      int targetvel = getHeader(headers, "TargetVelocity");
+
+      // Is the data pitched or voiced?
+      boolean pitched = (pitch != -1);
+
+      Map<Integer, Double> barTimeMap = new TreeMap<Integer, Double>();
+      Map<Integer, List<Double>> targBarTimeMap = new TreeMap<Integer, List<Double>>();
+      Map<Integer, List<Double>> playTargBarTimeMap = new TreeMap<Integer, List<Double>>();
+
+      // Two types of data
+      if (subj == -1)
+         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
+         {
+            double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
+            double targetOnset = -100;
+            if (targetons >= 0)
+               targetOnset = Double.parseDouble(nextLine[targetons]);
+
+            double targetVel = -100;
+            if (targetvel >= 0)
+               targetVel = Double.parseDouble(nextLine[targetvel]);
+
+            if (tScoreTime >= lower && tScoreTime <= upper)
+            {
+
+               Event ev = new Event(Double.parseDouble(nextLine[velocity]),
+                     Double.parseDouble(nextLine[onsetPos]), Double.parseDouble(nextLine[voice]),
+                     Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
+               if (pitched)
+                  ev = new Event(Double.parseDouble(nextLine[velocity]),
+                        Double.parseDouble(nextLine[onsetPos]), convertPitch(nextLine[pitch]),
+                        Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
+
+               mod.events.add(ev);
+
+               if (!nextLine[scoreTime].contains("."))
+               {
+                  // Fill up the targ Bar TimeMap
+                  if (!targBarTimeMap.containsKey((int) ev.getBar()))
+                  {
+                     targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
+                     playTargBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
+                  }
+
+                  // If we don't have the target time, use the given time
+                  // to compute the bar times
+                  System.out.println("TARGET = " + targetOnset + " and " + targetVel);
+                  if (targetOnset > 0)
+                     targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+                  else
+                     targBarTimeMap.get((int) ev.getBar()).add(
+                           Double.parseDouble(nextLine[onsetPos]));
+
+                  playTargBarTimeMap.get((int) ev.getBar()).add(
+                        Double.parseDouble(nextLine[onsetPos]));
+
+                  barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
+                        Double.parseDouble(nextLine[onsetPos]));
+               }
+               mod.maxVelocityDifference = Math.max(ev.getTargetVelocity() - ev.getVelocity(),
+                     mod.maxVelocityDifference);
+            }
+
+            mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
+            mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
+            mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
+
+         }
+      else
+         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
+         {
+
+            if (Integer.parseInt(nextLine[subj]) == subject)
+            {
+               if (Integer.parseInt(nextLine[tri]) == trial)
+               {
+                  double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
+                  double targetOnset = -100;
+                  if (targetons >= 0)
+                     targetOnset = Double.parseDouble(nextLine[targetons]);
+
+                  double targetVel = -100;
+                  if (targetvel >= 0)
+                     targetVel = Double.parseDouble(nextLine[targetvel]);
+                  Event ev = null;
+                  if (tScoreTime >= lower && tScoreTime <= upper)
+                  {
+                     ev = new Event(Double.parseDouble(nextLine[velocity]),
+                           Double.parseDouble(nextLine[onsetPos]),
+                           Double.parseDouble(nextLine[voice]),
+                           Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
+                     mod.events.add(ev);
+                  }
+                  mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
+                  mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
+                  mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
+
+                  if (!nextLine[scoreTime].contains("."))
+                  {
+                     // Fill up the targ Bar TimeMap
+                     if (ev != null)
+                     {
+                        if (!targBarTimeMap.containsKey((int) ev.getBar()))
+                        {
+                           targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
+                           playTargBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
+                        }
+                        // If we don't have the target time, use the given time
+                        // to compute the bar times
+
+                        if (targetOnset > 0)
+                           targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
+                        else
+                           targBarTimeMap.get((int) ev.getBar()).add(
+                                 Double.parseDouble(nextLine[onsetPos]));
+
+                        playTargBarTimeMap.get((int) ev.getBar()).add(
+                              Double.parseDouble(nextLine[onsetPos]));
+
+                        mod.maxVelocityDifference = Math.max(
+                              ev.getTargetVelocity() - ev.getVelocity(), mod.maxVelocityDifference);
+
+                     }
+                     barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
+                           Double.parseDouble(nextLine[onsetPos]));
+                  }
+
+               }
+
+               mod.trials.add(Integer.parseInt(nextLine[tri]));
+            }
+            mod.subjects.add(Integer.parseInt(nextLine[subj]));
+
+         }
+
+      // Offset all the times to start from zero
+      // for (Event ev : mod.events)
+      // ev.offsetOnsetTime(mod.minTime);
+
+      // Set the target bar times
+      for (Integer key : targBarTimeMap.keySet())
+      {
+         Double sum = 0.0;
+         System.out.println(targBarTimeMap.get(key));
+         for (Double val : targBarTimeMap.get(key))
+            sum += val;
+         mod.barStarts.put(key, sum / targBarTimeMap.get(key).size());
+
+         sum = 0.0;
+         for (Double val : playTargBarTimeMap.get(key))
+            sum += val;
+         mod.playBarStarts.put(key, sum / playTargBarTimeMap.get(key).size());
+      }
+
+      // Adjust for upbeats
+      if (mod.minBar != (int) mod.minBar)
+      {
+         double offsetTime = mod.barStarts.get((int) Math.ceil(mod.minBar)) - mod.minTime;
+         double value = offsetTime / ((int) Math.ceil(mod.minBar) - mod.minBar);
+         double time = mod.minTime - mod.minBar * value;
+
+         mod.barStarts.put((int) Math.floor(mod.minBar), time);
+      }
+      else
+         System.out.println("MIN BAR = " + mod.minBar);
+
+      // Set the average bar time
+      if (bLength < 0)
+      {
+         double sum = 0;
+         double count = 0;
+         for (int i = 1; i < mod.getMaxBar() - 1; i += 1)
+            if (barTimeMap.containsKey(i) && barTimeMap.containsKey(i + 1))
+            {
+               sum += barTimeMap.get(i + 1) - barTimeMap.get(i);
+               count++;
+            }
+         mod.avgBarLength = sum / count;
+         mod.barLength = mod.avgBarLength;
+      }
+      else
+      {
+         mod.avgBarLength = bLength;
+         mod.barLength = bLength;
+      }
+
+      return mod;
+   }
+
+   /**
+    * Helper function to get the index of a string in the array
+    * 
+    * @param list
+    *           THe list of headers
+    * @param key
+    *           THe key to search for
+    * @return The index of the key within the list
+    */
+   private static int getHeader(final String[] list, final String key)
+   {
+      for (int i = 0; i < list.length; i++)
+         if (list[i].equals(key))
+         {
+            System.out.println(list[i] + " => " + key + " (" + i + ")");
+            return i;
+         }
+      return -1;
+   }
+
+   /**
+    * Loads the note map
+    */
+   private static void loadNoteMap()
+   {
+      double noteVal = 21;
+      try
+      {
+         InputStream is = Model.class.getResourceAsStream("/etc/midi.txt");
+         if (is == null)
+            is = new FileInputStream("src/main/resources/etc/midi.txt");
+         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+         for (String line = reader.readLine(); line != null; line = reader.readLine())
+         {
+            noteMap.put(line.trim(), noteVal);
+            noteVal = noteVal + 1;
+         }
+         reader.close();
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+      }
+   }
+
+   public static void main(String[] args) throws IOException
+   {
+      Model mod = Model.generateModel(new File("/Users/sat/data/renee/n8R.txt"), 1, 1, 1, 17, 2.5);
+
+      for (Event ev : mod.getEvents())
+         // System.out.println(ev + " and " + ev.getBar());
+         System.out.println(ev + " and " + ev.getOnset() + " / " + mod.getScoreTime(ev));
+
+      System.out.println("BAR TIMES = " + mod.getBarTimes());
+      System.out.println("LOW = " + mod.getMaxBar());
+   }
+
    /** The average length of a bar in seconds */
    private double avgBarLength;
 
@@ -50,6 +350,9 @@ public class Model
 
    /** The maximum bar number seen overall */
    private double maxBar = -1;
+
+   /** The maximum velocity difference */
+   private double maxVelocityDifference = 0.0;
 
    /** The minimum bar number */
    private double minBar = Double.MAX_VALUE;
@@ -203,6 +506,11 @@ public class Model
       return barTimes;
    }
 
+   public final double getMetronomicScoreTime(final Event ev)
+   {
+      return ev.getBar() * avgBarLength;
+   }
+
    public final double getMinBar()
    {
       return minBar;
@@ -289,6 +597,11 @@ public class Model
          else
             barTimes.add(0.0);
       return barTimes;
+   }
+
+   public final double getRelativeVelocity(final Event ev)
+   {
+      return (ev.getVelocity() - ev.getTargetVelocity());
    }
 
    /**
@@ -413,298 +726,5 @@ public class Model
    {
       lowerBound = lower;
       upperBound = upper;
-   }
-
-   /**
-    * Helper function to get the pitch value from the string
-    * 
-    * @param pitchName
-    *           The string name of the pitch value (e.g. A3)
-    * @return The corresponding pitch value
-    */
-   private static double convertPitch(final String pitchName)
-   {
-      if (noteMap.size() == 0)
-         loadNoteMap();
-      return noteMap.get(pitchName);
-   }
-
-   /**
-    * Generates a model given a file and other parameters
-    * 
-    * @param f
-    *           File to read
-    * @param subject
-    *           THe subject to consider
-    * @param trial
-    *           The trial to consider
-    * @param lower
-    *           the Lower bound of zoom
-    * @param upper
-    *           the Upper bound of zoom
-    * @param bLength
-    *           The length of a bar
-    * @return A valid model for this subject and trial
-    * @throws IOException
-    *            if something goes wrong reading the file
-    */
-   public static final Model generateModel(final File f, final int subject, final int trial,
-         final double lower, final double upper, final double bLength) throws IOException
-   {
-      Model mod = new Model();
-      mod.selectedSubject = subject;
-      mod.selectedTrial = trial;
-      mod.lowerBound = lower;
-      mod.upperBound = upper;
-      mod.barLength = bLength;
-
-      CSVReader reader = new CSVReader(new FileReader(f));
-      String[] headers = reader.readNext();
-      int onsetPos, scoreTime, velocity, voice, subj, tri;
-      onsetPos = getHeader(headers, "Onset");
-      scoreTime = getHeader(headers, "ScoreTime");
-      velocity = getHeader(headers, "Velocity");
-      voice = getHeader(headers, "Voice");
-      subj = getHeader(headers, "Subject");
-      tri = getHeader(headers, "Trial");
-      int pitch = getHeader(headers, "Pitch");
-      int targetons = getHeader(headers, "TargetOnset");
-      int targetvel = getHeader(headers, "TargetVelocity");
-
-      // Is the data pitched or voiced?
-      boolean pitched = (pitch != -1);
-
-      Map<Integer, Double> barTimeMap = new TreeMap<Integer, Double>();
-      Map<Integer, List<Double>> targBarTimeMap = new TreeMap<Integer, List<Double>>();
-      Map<Integer, List<Double>> playTargBarTimeMap = new TreeMap<Integer, List<Double>>();
-
-      // Two types of data
-      if (subj == -1)
-         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
-         {
-            double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-            double targetOnset = -100;
-            if (targetons >= 0)
-               targetOnset = Double.parseDouble(nextLine[targetons]);
-
-            double targetVel = -100;
-            if (targetvel >= 0)
-               targetVel = Double.parseDouble(nextLine[targetvel]);
-
-            if (tScoreTime >= lower && tScoreTime <= upper)
-            {
-
-               Event ev = new Event(Double.parseDouble(nextLine[velocity]),
-                     Double.parseDouble(nextLine[onsetPos]), Double.parseDouble(nextLine[voice]),
-                     Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
-               if (pitched)
-                  ev = new Event(Double.parseDouble(nextLine[velocity]),
-                        Double.parseDouble(nextLine[onsetPos]), convertPitch(nextLine[pitch]),
-                        Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
-
-               mod.events.add(ev);
-
-               if (!nextLine[scoreTime].contains("."))
-               {
-                  // Fill up the targ Bar TimeMap
-                  if (!targBarTimeMap.containsKey((int) ev.getBar()))
-                  {
-                     targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
-                     playTargBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
-                  }
-
-                  // If we don't have the target time, use the given time
-                  // to compute the bar times
-                  System.out.println("TARGET = " + targetOnset + " and " + targetVel);
-                  if (targetOnset > 0)
-                     targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
-                  else
-                     targBarTimeMap.get((int) ev.getBar()).add(
-                           Double.parseDouble(nextLine[onsetPos]));
-
-                  playTargBarTimeMap.get((int) ev.getBar()).add(
-                        Double.parseDouble(nextLine[onsetPos]));
-
-                  barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
-                        Double.parseDouble(nextLine[onsetPos]));
-               }
-            }
-
-            mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
-            mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
-            mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
-
-         }
-      else
-         for (String[] nextLine = reader.readNext(); nextLine != null; nextLine = reader.readNext())
-         {
-
-            if (Integer.parseInt(nextLine[subj]) == subject)
-            {
-               if (Integer.parseInt(nextLine[tri]) == trial)
-               {
-                  double tScoreTime = Double.parseDouble(nextLine[scoreTime]);
-                  double targetOnset = -100;
-                  if (targetons >= 0)
-                     targetOnset = Double.parseDouble(nextLine[targetons]);
-
-                  double targetVel = -100;
-                  if (targetvel >= 0)
-                     targetVel = Double.parseDouble(nextLine[targetvel]);
-                  Event ev = null;
-                  if (tScoreTime >= lower && tScoreTime <= upper)
-                  {
-                     ev = new Event(Double.parseDouble(nextLine[velocity]),
-                           Double.parseDouble(nextLine[onsetPos]),
-                           Double.parseDouble(nextLine[voice]),
-                           Double.parseDouble(nextLine[scoreTime]), targetOnset, targetVel);
-                     mod.events.add(ev);
-                  }
-                  mod.maxBar = Math.max(mod.maxBar, Double.parseDouble(nextLine[scoreTime]));
-                  mod.minTime = Math.min(Double.parseDouble(nextLine[onsetPos]), mod.minTime);
-                  mod.minBar = Math.min(mod.minBar, Double.parseDouble(nextLine[scoreTime]));
-
-                  if (!nextLine[scoreTime].contains("."))
-                  {
-                     // Fill up the targ Bar TimeMap
-                     if (ev != null)
-                     {
-                        if (!targBarTimeMap.containsKey((int) ev.getBar()))
-                        {
-                           targBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
-                           playTargBarTimeMap.put((int) ev.getBar(), new LinkedList<Double>());
-                        }
-                        // If we don't have the target time, use the given time
-                        // to compute the bar times
-
-                        if (targetOnset > 0)
-                           targBarTimeMap.get((int) ev.getBar()).add(targetOnset);
-                        else
-                           targBarTimeMap.get((int) ev.getBar()).add(
-                                 Double.parseDouble(nextLine[onsetPos]));
-
-                        playTargBarTimeMap.get((int) ev.getBar()).add(
-                              Double.parseDouble(nextLine[onsetPos]));
-                     }
-                     barTimeMap.put(Integer.parseInt(nextLine[scoreTime]),
-                           Double.parseDouble(nextLine[onsetPos]));
-                  }
-               }
-
-               mod.trials.add(Integer.parseInt(nextLine[tri]));
-            }
-            mod.subjects.add(Integer.parseInt(nextLine[subj]));
-
-         }
-
-      // Offset all the times to start from zero
-      // for (Event ev : mod.events)
-      // ev.offsetOnsetTime(mod.minTime);
-
-      // Set the target bar times
-      for (Integer key : targBarTimeMap.keySet())
-      {
-         Double sum = 0.0;
-         System.out.println(targBarTimeMap.get(key));
-         for (Double val : targBarTimeMap.get(key))
-            sum += val;
-         mod.barStarts.put(key, sum / targBarTimeMap.get(key).size());
-
-         sum = 0.0;
-         for (Double val : playTargBarTimeMap.get(key))
-            sum += val;
-         mod.playBarStarts.put(key, sum / playTargBarTimeMap.get(key).size());
-      }
-
-      // Adjust for upbeats
-      if (mod.minBar != (int) mod.minBar)
-      {
-         double offsetTime = mod.barStarts.get((int) Math.ceil(mod.minBar)) - mod.minTime;
-         double value = offsetTime / ((int) Math.ceil(mod.minBar) - mod.minBar);
-         double time = mod.minTime - mod.minBar * value;
-
-         mod.barStarts.put((int) Math.floor(mod.minBar), time);
-      }
-      else
-         System.out.println("MIN BAR = " + mod.minBar);
-
-      // Set the average bar time
-      if (bLength < 0)
-      {
-         double sum = 0;
-         double count = 0;
-         for (int i = 1; i < mod.getMaxBar() - 1; i += 1)
-            if (barTimeMap.containsKey(i) && barTimeMap.containsKey(i + 1))
-            {
-               sum += barTimeMap.get(i + 1) - barTimeMap.get(i);
-               count++;
-            }
-         mod.avgBarLength = sum / count;
-         mod.barLength = mod.avgBarLength;
-      }
-      else
-      {
-         mod.avgBarLength = bLength;
-         mod.barLength = bLength;
-      }
-
-      return mod;
-   }
-
-   /**
-    * Helper function to get the index of a string in the array
-    * 
-    * @param list
-    *           THe list of headers
-    * @param key
-    *           THe key to search for
-    * @return The index of the key within the list
-    */
-   private static int getHeader(final String[] list, final String key)
-   {
-      for (int i = 0; i < list.length; i++)
-         if (list[i].equals(key))
-         {
-            System.out.println(list[i] + " => " + key + " (" + i + ")");
-            return i;
-         }
-      return -1;
-   }
-
-   /**
-    * Loads the note map
-    */
-   private static void loadNoteMap()
-   {
-      double noteVal = 21;
-      try
-      {
-         InputStream is = Model.class.getResourceAsStream("/etc/midi.txt");
-         if (is == null)
-            is = new FileInputStream("src/main/resources/etc/midi.txt");
-         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-         for (String line = reader.readLine(); line != null; line = reader.readLine())
-         {
-            noteMap.put(line.trim(), noteVal);
-            noteVal = noteVal + 1;
-         }
-         reader.close();
-      }
-      catch (IOException e)
-      {
-         e.printStackTrace();
-      }
-   }
-
-   public static void main(String[] args) throws IOException
-   {
-      Model mod = Model.generateModel(new File("/Users/sat/data/renee/n8R.txt"), 1, 1, 1, 17, 2.5);
-
-      for (Event ev : mod.getEvents())
-         // System.out.println(ev + " and " + ev.getBar());
-         System.out.println(ev + " and " + ev.getOnset() + " / " + mod.getScoreTime(ev));
-
-      System.out.println("BAR TIMES = " + mod.getBarTimes());
-      System.out.println("LOW = " + mod.getMaxBar());
    }
 }
