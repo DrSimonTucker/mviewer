@@ -601,7 +601,10 @@ public class Model
 
    public final double getRelativeVelocity(final Event ev)
    {
-      return (ev.getVelocity() - ev.getTargetVelocity());
+      if (ev.getTargetVelocity() > 0)
+         return (ev.getVelocity() - ev.getTargetVelocity());
+      else
+         return ev.getVelocity();
    }
 
    /**

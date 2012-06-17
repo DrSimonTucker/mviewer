@@ -72,7 +72,7 @@ public class BarDriftLine extends JPanel implements ModelListener
          // Do some housekeeping
          double pixelPerSecond = (this.getWidth() - LEFT_MARGIN * 2) / model.getTotalLength();
          List<Double> barTimes = model.getMetronomicBarTimes();
-         List<Double> playBarTimes = model.getPlayBarTimes();
+         List<Double> playBarTimes = model.getBarTimes();
          System.out.println("HERE = " + playBarTimes);
          System.out.println("ALSO = " + barTimes);
 
@@ -95,18 +95,19 @@ public class BarDriftLine extends JPanel implements ModelListener
          // g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
 
          // Draw the bar lines if needed
-         /*
-          * g.setColor(Color.black); for (int i = 0; i < barTimes.size() - 1;
-          * i++) { double perc = 1 - ((barTimes.get(i + 1) - barTimes.get(i)) -
-          * minBarTime) / (maxBarTime - minBarTime); int height = (int) (perc *
-          * ((this.getHeight() - MARGIN)));
-          * 
-          * int pixPosLeft = LEFT_MARGIN + (int) ((barTimes.get(i) -
-          * model.getOffset()) * pixelPerSecond); int pixPosRight = LEFT_MARGIN
-          * + (int) ((barTimes.get(i + 1) - model.getOffset()) *
-          * pixelPerSecond); g.drawLine(pixPosLeft, height, pixPosRight,
-          * height); }
-          */
+         g.setColor(Color.black);
+         for (int i = 0; i < barTimes.size() - 1; i++)
+         {
+            double perc = 1 - ((barTimes.get(i + 1) - barTimes.get(i)) - minBarTime)
+                  / (maxBarTime - minBarTime);
+            int height = (int) (perc * ((this.getHeight() - MARGIN)));
+
+            int pixPosLeft = LEFT_MARGIN
+                  + (int) ((barTimes.get(i) - model.getOffset()) * pixelPerSecond);
+            int pixPosRight = LEFT_MARGIN
+                  + (int) ((barTimes.get(i + 1) - model.getOffset()) * pixelPerSecond);
+            g.drawLine(pixPosLeft, height, pixPosRight, height);
+         }
 
          // Draw the bar lines if needed
          g.setColor(Color.red);

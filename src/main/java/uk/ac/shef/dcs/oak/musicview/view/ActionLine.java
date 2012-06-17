@@ -22,8 +22,7 @@ public class ActionLine extends JPanel implements ModelListener
    /** Flag for painting the bar lines */
    private static final boolean BAR_LINES = true;
 
-   /** How much to offset the predicted and actual hit marks */
-   private static final int OFFSET = 0;
+   private static final int GIVEN_CIRCLE_SIZE = 8;
 
    /** The left margin in pixels */
    public static final int LEFT_MARGIN = 20;
@@ -33,13 +32,16 @@ public class ActionLine extends JPanel implements ModelListener
    /** Size of the circle */
    private static final int MAX_CIRCLE_SIZE = 40;
 
-   private static final int GIVEN_CIRCLE_SIZE = 8;
-
    /** Size of the circle */
    private static final int MIN_CIRCLE_SIZE = 10;
 
+   /** How much to offset the predicted and actual hit marks */
+   private static final int OFFSET = 0;
+
    /** The voice we're considering */
    private final double chosenVoice;
+
+   double id = Math.random();
 
    /** The list of events that should be plotted */
    private Model model;
@@ -86,8 +88,6 @@ public class ActionLine extends JPanel implements ModelListener
          });
    }
 
-   double id = Math.random();
-
    @Override
    public final void paint(final Graphics g)
    {
@@ -105,6 +105,7 @@ public class ActionLine extends JPanel implements ModelListener
             if (isValidEvent(ev))
             {
                double percVelocity = model.getVelocityPerc(ev);
+               System.out.println("PERC = " + percVelocity);
                int velCircleSize = GIVEN_CIRCLE_SIZE;
                int circleSize = (int) (percVelocity * (MAX_CIRCLE_SIZE - MIN_CIRCLE_SIZE))
                      + MIN_CIRCLE_SIZE;
