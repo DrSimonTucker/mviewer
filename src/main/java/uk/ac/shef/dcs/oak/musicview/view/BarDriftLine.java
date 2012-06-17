@@ -91,8 +91,8 @@ public class BarDriftLine extends JPanel implements ModelListener
          }
 
          // Draw in the gray middle line
-         g.setColor(Color.lightGray);
-         g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
+         // g.setColor(Color.lightGray);
+         // g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
 
          // Draw the bar lines if needed
          g.setColor(Color.black);
