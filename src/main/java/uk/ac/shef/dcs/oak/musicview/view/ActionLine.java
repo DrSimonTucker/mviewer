@@ -113,9 +113,10 @@ public class ActionLine extends JPanel implements ModelListener
                      + MIN_CIRCLE_SIZE;
 
                // Draw the Desired onset in black
+               // Draw the Desired onset in black
                g.setColor(Color.darkGray);
                int actPixCent = LEFT_MARGIN
-                     + (int) ((model.getScoreTime(ev) - model.getOffset()) * pixelPerSecond);
+                     + (int) ((model.getMetronomicScoreTime(ev) - model.getOffset()) * pixelPerSecond);
                int actYPixCent = this.getHeight() / 2 + OFFSET;
                g.drawOval(actPixCent - velCircleSize / 2, actYPixCent - targetCircleSize / 2,
                      velCircleSize, targetCircleSize);
@@ -123,7 +124,8 @@ public class ActionLine extends JPanel implements ModelListener
                // Draw a circle at the relevant point and the relevant pitch
                g.setColor(Color.RED);
                int xPixCent = LEFT_MARGIN
-                     + (int) ((ev.getOnset() - model.getOffset()) * pixelPerSecond);
+                     + (int) (((model.getMetronomicScoreTime(ev) + (model.getMetroNormPerfTime(ev) - model
+                           .getMetroNormTargTime(ev))) - model.getOffset()) * pixelPerSecond);
                int yPixCent = this.getHeight() / 2;
                g.drawOval(xPixCent - velCircleSize / 2, yPixCent - circleSize / 2, velCircleSize,
                      circleSize);
@@ -134,7 +136,7 @@ public class ActionLine extends JPanel implements ModelListener
          if (BAR_LINES)
          {
             g.setColor(Color.lightGray);
-            for (double barTime : model.getBarTimes())
+            for (double barTime : model.getMetronomicBarTimes())
             {
                int pixPos = LEFT_MARGIN + (int) ((barTime - model.getOffset()) * pixelPerSecond);
                g.drawLine(pixPos, 0, pixPos, this.getHeight());

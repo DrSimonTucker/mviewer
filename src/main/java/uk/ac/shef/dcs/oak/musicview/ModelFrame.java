@@ -16,6 +16,7 @@ import javax.swing.SwingUtilities;
 import uk.ac.shef.dcs.oak.musicview.view.BarDriftLine;
 import uk.ac.shef.dcs.oak.musicview.view.MetronomicActionLine;
 import uk.ac.shef.dcs.oak.musicview.view.SelectionPanel;
+import uk.ac.shef.dcs.oak.musicview.view.SummaryActionLine;
 
 public class ModelFrame extends JFrame implements ModelListener
 {
@@ -89,6 +90,12 @@ public class ModelFrame extends JFrame implements ModelListener
             GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
       mainPanel.add(sumActionLabel);
       addedComps.add(sumActionLabel);
+
+      SummaryActionLine sal = new SummaryActionLine(cont);
+      gbl.setConstraints(sal, new GridBagConstraints(1, 1, 1, 1, 1, 1, GridBagConstraints.CENTER,
+            GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+      mainPanel.add(sal);
+      addedComps.add(sal);
 
       int counter = 2;
       // System.out.println("VOICES = " + mod.getVoices());
