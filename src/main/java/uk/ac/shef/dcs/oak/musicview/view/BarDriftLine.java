@@ -73,15 +73,18 @@ public class BarDriftLine extends JPanel implements ModelListener
          double pixelPerSecond = (this.getWidth() - LEFT_MARGIN * 2) / model.getTotalLength();
          List<Double> barTimes = model.getBarTimes();
          List<Double> playBarTimes = model.getPlayBarTimes();
+         List<Double> metroBars = model.getMetronomicBarTimes();
          System.out.println("HERE = " + playBarTimes);
          System.out.println("ALSO = " + barTimes);
 
          List<Double> barLengths = new LinkedList<Double>();
+         List<Double> others = new LinkedList<Double>();
          double maxBarTime = 0;
          double minBarTime = Double.MAX_VALUE;
          for (int i = 0; i < barTimes.size() - 1; i++)
          {
             barLengths.add(barTimes.get(i + 1) - barTimes.get(i));
+            others.add(playBarTimes.get(i + 1) - playBarTimes.get(i));
             maxBarTime = Math.max(maxBarTime, Math.abs(barTimes.get(i + 1) - barTimes.get(i)));
             maxBarTime = Math.max(maxBarTime,
                   Math.abs(playBarTimes.get(i + 1) - playBarTimes.get(i)));
@@ -89,6 +92,8 @@ public class BarDriftLine extends JPanel implements ModelListener
             minBarTime = Math.min(minBarTime,
                   Math.abs(playBarTimes.get(i + 1) - playBarTimes.get(i)));
          }
+         System.out.println("FINALLY = " + barLengths);
+         System.out.println("AND = " + others);
 
          // Draw in the gray middle line
          // g.setColor(Color.lightGray);
@@ -103,9 +108,9 @@ public class BarDriftLine extends JPanel implements ModelListener
             int height = (int) (perc * ((this.getHeight() - MARGIN)));
 
             int pixPosLeft = LEFT_MARGIN
-                  + (int) ((barTimes.get(i) - model.getOffset()) * pixelPerSecond);
+                  + (int) ((metroBars.get(i) - model.getOffset()) * pixelPerSecond);
             int pixPosRight = LEFT_MARGIN
-                  + (int) ((barTimes.get(i + 1) - model.getOffset()) * pixelPerSecond);
+                  + (int) ((metroBars.get(i + 1) - model.getOffset()) * pixelPerSecond);
             g.drawLine(pixPosLeft, height, pixPosRight, height);
          }
 
@@ -117,9 +122,9 @@ public class BarDriftLine extends JPanel implements ModelListener
                   / (maxBarTime - minBarTime);
             int height = (int) (perc * ((this.getHeight() - MARGIN)));
             int pixPosLeft = LEFT_MARGIN
-                  + (int) ((barTimes.get(i) - model.getOffset()) * pixelPerSecond);
+                  + (int) ((metroBars.get(i) - model.getOffset()) * pixelPerSecond);
             int pixPosRight = LEFT_MARGIN
-                  + (int) ((barTimes.get(i + 1) - model.getOffset()) * pixelPerSecond);
+                  + (int) ((metroBars.get(i + 1) - model.getOffset()) * pixelPerSecond);
             g.drawLine(pixPosLeft, height, pixPosRight, height);
          }
 
