@@ -511,6 +511,57 @@ public class Model
       return ev.getBar() * avgBarLength;
    }
 
+   /**
+    * This normalises the performance time in terms of the target bar time
+    * 
+    * @param ev
+    * @return
+    */
+   public final double getMetroNormPerfTime(final Event ev)
+   {
+      int barStart = (int) Math.floor(ev.getBar());
+      int barEnd = (int) Math.ceil(ev.getBar());
+      if (barStart == barEnd)
+         barEnd++;
+
+      // FIx the problem of a missing end bar
+      if (!playBarStarts.containsKey(barEnd))
+      {
+         double avg = 0.0;
+         for (int i = 2; i < barEnd; i++)
+            avg += playBarStarts.get(i) - playBarStarts.get(i - 1);
+         playBarStarts.put(barEnd, playBarStarts.get(barEnd - 1) + avg / (barEnd - 2));
+      }
+
+      System.out.println(barStart + " and " + barEnd + " given " + playBarStarts);
+      double perfPerc = (ev.getOnset() - playBarStarts.get(barStart))
+            / (playBarStarts.get(barEnd) - playBarStarts.get(barStart));
+      return perfPerc * avgBarLength + avgBarLength * barStart;
+   }
+
+   public final double getMetroNormTargTime(final Event ev)
+   {
+      int barStart = (int) Math.floor(ev.getBar());
+      int barEnd = (int) Math.ceil(ev.getBar());
+      if (barStart == barEnd)
+         barEnd++;
+
+      // FIx the problem of a missing end bar
+      if (!barStarts.containsKey(barEnd))
+      {
+         double avg = 0.0;
+         for (int i = 2; i < barEnd; i++)
+            avg += barStarts.get(i) - barStarts.get(i - 1);
+         barStarts.put(barEnd, barStarts.get(barEnd - 1) + avg / (barEnd - 2));
+      }
+
+      double perfPerc = (ev.getTargetOnset() - barStarts.get(barStart))
+            / (barStarts.get(barEnd) - barStarts.get(barStart));
+      System.out.println("PERCPERC = " + perfPerc + " since " + ev.getOnset() + " and "
+            + barStarts.get(barStart) + " also " + barStarts.get(barEnd));
+      return perfPerc * avgBarLength + avgBarLength * barStart;
+   }
+
    public final double getMinBar()
    {
       return minBar;

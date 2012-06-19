@@ -125,8 +125,8 @@ public class MetronomicActionLine extends JPanel implements ModelListener
 
                g.setColor(Color.RED);
                int xPixCent = LEFT_MARGIN
-                     + (int) (((model.getMetronomicScoreTime(ev) + (model.getScoreTime(ev) - ev
-                           .getOnset())) - model.getOffset()) * pixelPerSecond);
+                     + (int) (((model.getMetronomicScoreTime(ev) + (model.getMetroNormPerfTime(ev) - model
+                           .getMetroNormTargTime(ev))) - model.getOffset()) * pixelPerSecond);
                int yPixCent = this.getHeight() / 2;
                g.drawOval(xPixCent - velCircleSize / 2, yPixCent - circleSize / 2, velCircleSize,
                      circleSize);
