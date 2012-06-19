@@ -95,7 +95,7 @@ public class BarDriftLine extends JPanel implements ModelListener
          // g.drawLine(0, this.getHeight() / 2, getWidth(), getHeight() / 2);
 
          // Draw the bar lines if needed
-         g.setColor(Color.black);
+         g.setColor(Color.red);
          for (int i = 0; i < barTimes.size() - 1; i++)
          {
             double perc = 1 - ((barTimes.get(i + 1) - barTimes.get(i)) - minBarTime)
@@ -110,7 +110,7 @@ public class BarDriftLine extends JPanel implements ModelListener
          }
 
          // Draw the bar lines if needed
-         g.setColor(Color.red);
+         g.setColor(Color.black);
          for (int i = 0; i < playBarTimes.size() - 1; i++)
          {
             double perc = 1 - ((playBarTimes.get(i + 1) - playBarTimes.get(i)) - minBarTime)
