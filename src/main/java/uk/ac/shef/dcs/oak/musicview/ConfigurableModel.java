@@ -1,6 +1,9 @@
 package uk.ac.shef.dcs.oak.musicview;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Model which can be configured
@@ -11,6 +14,17 @@ import java.util.List;
 public class ConfigurableModel
 {
    List<Event> notes;
+   List<ConfigurableModelListener> listeners = new LinkedList<ConfigurableModelListener>();
+
+   public void addListener(ConfigurableModelListener listener)
+   {
+      listeners.add(listener);
+   }
+
+   public List<ConfigurableModelListener> getListeners()
+   {
+      return listeners;
+   }
 
    int barStart, barEnd;
 
@@ -30,6 +44,17 @@ public class ConfigurableModel
       barTimes.clear();
    }
 
+   public double getTotalLength()
+   {
+      List<Double> barTimes = getBarTimes();
+      return barTimes.get(barTimes.size() - 1) - barTimes.get(0);
+   }
+
+   public double getOffset()
+   {
+      return getBarTimes().get(0);
+   }
+
    public List<Double> getBarTimes()
    {
       if (barTimes.size() == 0)
@@ -46,15 +71,68 @@ public class ConfigurableModel
                barTimes.add(i * barLength);
          }
          else if (bConfig == BarConfig.PLAYER_TIME)
-            for(int i = barStart ; i <= barEnd; i++)
+            for (int i = barStart; i <= barEnd; i++)
             {
-               double startTime = 0, endTime = 0;
-               double startBar = 0, endBar = 0;
-               for(Event ev : notes)
-                  if (ev.getBar() >= barStart && ev.getBar() <= barEnd)
-                     if (ev.getBar() < startBar)
+               Map<Double, List<Double>> timeMap = new TreeMap<Double, List<Double>>();
+               double firstBar = Double.MAX_VALUE;
+               double lastBar = 0;
+               for (Event note : notes)
+                  if (note.getBar() >= i && note.getBar() <= (i + 1))
+                  {
+                     if (!timeMap.containsKey(note.getBar()))
+                        timeMap.put(note.getBar(), new LinkedList<Double>());
+                     timeMap.get(note.getBar()).add(note.getOnset());
+
+                     firstBar = Math.min(firstBar, note.getBar());
+                     lastBar = Math.max(lastBar, note.getBar());
+                  }
+
+               if (Math.abs(firstBar - Math.round(firstBar)) < 0.01)
+                  barTimes.add(computeMean(timeMap.get(firstBar)));
+               else
+               {
+                  double diff = computeMean(timeMap.get(lastBar))
+                        - computeMean(timeMap.get(firstBar));
+                  barTimes.add(diff / (lastBar - firstBar) * (lastBar - Math.floor(firstBar)));
+               }
+
+            }
+         else if (bConfig == BarConfig.TARGET_TIME)
+            for (int i = barStart; i <= barEnd; i++)
+            {
+               Map<Double, List<Double>> timeMap = new TreeMap<Double, List<Double>>();
+               double firstBar = Double.MAX_VALUE;
+               double lastBar = 0;
+               for (Event note : notes)
+                  if (note.getBar() >= i && note.getBar() <= (i + 1))
+                  {
+                     if (!timeMap.containsKey(note.getBar()))
+                        timeMap.put(note.getBar(), new LinkedList<Double>());
+                     timeMap.get(note.getBar()).add(note.getTargetOnset());
+
+                     firstBar = Math.min(firstBar, note.getBar());
+                     lastBar = Math.max(lastBar, note.getBar());
+                  }
+
+               if (Math.abs(firstBar - Math.round(firstBar)) < 0.01)
+                  barTimes.add(computeMean(timeMap.get(firstBar)));
+               else
+               {
+                  double diff = computeMean(timeMap.get(lastBar))
+                        - computeMean(timeMap.get(firstBar));
+                  barTimes.add(diff / (lastBar - firstBar) * (lastBar - Math.floor(firstBar)));
+               }
+
             }
 
       return barTimes;
+   }
+
+   private double computeMean(List<Double> values)
+   {
+      double sum = 0;
+      for (Double val : values)
+         sum += val;
+      return sum / values.size();
    }
 }

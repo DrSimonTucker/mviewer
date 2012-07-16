@@ -50,6 +50,17 @@ public class Event
    }
 
    /**
+    * Simple method for determining if this is event takes place at the start of
+    * a bar
+    * 
+    * @return
+    */
+   public final boolean isStartBar()
+   {
+      return scoreTime - Math.round(scoreTime) < 0.01;
+   }
+
+   /**
     * Gets the bar number of this event
     * 
     * @return THe bar number X.Y where X is bar, and Y is perc of bar
